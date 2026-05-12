@@ -1,0 +1,96 @@
+import { type FC } from 'react'
+import { useAlbumDetail } from '../hooks/useAlbumDetail'
+import { useLightbox } from '../hooks/useLightbox'
+import { MediaCard } from '../components/MediaCard'
+import { Lightbox } from '../components/Lightbox'
+import { LoadingSkeleton } from '../components/LoadingSkeleton'
+
+interface AlbumDetailPageProps {
+  albumId: string
+  onBack: () => void
+}
+
+/**
+ * AlbumDetailPage — Shows a single album's mediaItems in a masonry grid.
+ * Includes a back button, album info header, and lightbox.
+ */
+export const AlbumDetailPage: FC<AlbumDetailPageProps> = ({ albumId, onBack }) => {
+  const { album, mediaItems, isLoading, error } = useAlbumDetail(albumId)
+  const lightbox = useLightbox(mediaItems)
+
+  return (
+    <section className="album-detail">
+      {/* Back button */}
+      <button className="album-detail__back" onClick={onBack} aria-label="Quay lại Albums">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
+        </svg>
+        <span>Albums</span>
+      </button>
+
+      {isLoading && <LoadingSkeleton />}
+
+      {error && (
+        <div className="error-state">
+          <p className="error-state__message">😔 {error}</p>
+        </div>
+      )}
+
+      {!isLoading && !error && album && (
+        <>
+          {/* Album header */}
+          <div className="album-detail__header">
+            <h1 className="album-detail__title">{album.title}</h1>
+            <p className="album-detail__description">{album.description}</p>
+            <div className="album-detail__meta">
+              <span className="album-detail__count">
+                {mediaItems.length} ảnh
+              </span>
+              <span className="album-detail__dot">·</span>
+              <time className="album-detail__date">
+                {album.createdAt.toLocaleDateString('vi-VN', {
+                  month: 'long',
+                  year: 'numeric',
+                })}
+              </time>
+            </div>
+          </div>
+
+          {/* MediaItems masonry grid */}
+          {mediaItems.length > 0 ? (
+            <div className="album-detail__grid masonry-grid">
+              {mediaItems.map((mediaItem, index) => (
+                <MediaCard
+                  key={mediaItem.id}
+                  mediaItem={mediaItem}
+                  onClick={lightbox.open}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="empty-state">
+              <div className="empty-state__icon">📷</div>
+              <p className="empty-state__title">Album trống</p>
+              <p className="empty-state__description">
+                Chưa có ảnh nào trong album này.
+              </p>
+            </div>
+          )}
+        </>
+      )}
+
+      <Lightbox
+        isOpen={lightbox.isOpen}
+        mediaItem={lightbox.currentPhoto}
+        currentIndex={lightbox.currentIndex}
+        totalPhotos={lightbox.totalPhotos}
+        allPhotos={mediaItems}
+        onClose={lightbox.close}
+        onNext={lightbox.next}
+        onPrev={lightbox.prev}
+      />
+    </section>
+  )
+}
