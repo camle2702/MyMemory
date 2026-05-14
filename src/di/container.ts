@@ -11,6 +11,8 @@ import { CreateAlbum } from '@domain/usecases/CreateAlbum'
 import type { MediaItemRepository } from '@domain/repositories/MediaItemRepository'
 import type { AlbumRepository } from '@domain/repositories/AlbumRepository'
 
+import { AssignMediaToAlbum } from '@domain/usecases/AssignMediaToAlbum'
+
 /**
  * Simple Dependency Injection container.
  * Swap Mock → Supabase repositories when ready.
@@ -29,10 +31,11 @@ const albumRepository: AlbumRepository = isSupabaseConfigured
 
 // Use Cases
 const getTimelinePhotos = new GetTimelineMedia(mediaItemRepository)
-const getAlbums = new GetAlbums(albumRepository)
+const getAlbums = new GetAlbums(albumRepository, mediaItemRepository)
 const getAlbumWithPhotos = new GetAlbumWithMedia(albumRepository, mediaItemRepository)
 const uploadNewMedia = new UploadNewMedia(mediaItemRepository)
 const createAlbum = new CreateAlbum(albumRepository)
+const assignMediaToAlbum = new AssignMediaToAlbum(mediaItemRepository)
 
 export const container = {
   mediaItemRepository,
@@ -42,6 +45,7 @@ export const container = {
   getAlbumWithPhotos,
   uploadNewMedia,
   createAlbum,
+  assignMediaToAlbum,
   isSupabaseConfigured, // Export flag to show warning in UI if needed
 } as const
 

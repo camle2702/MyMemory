@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
-import type { Album } from '@domain/entities/Album'
+import type { AlbumWithStats } from '@domain/usecases/GetAlbums'
 import { container } from '@/di/container'
 
 interface UseAlbumsState {
-  albums: Album[]
+  albums: AlbumWithStats[]
   isLoading: boolean
   error: string | null
 }

@@ -125,6 +125,17 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
     return this.mapToEntity(recordData);
   }
 
+  async assignToAlbum(id: string, albumId: string): Promise<void> {
+    if (!supabase) throw new Error("Supabase client is not initialized.");
+
+    const { error } = await supabase
+      .from('media_items')
+      .update({ album_id: albumId })
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
+  }
+
   async delete(id: string): Promise<void> {
     if (!supabase) throw new Error("Supabase client is not initialized.");
 

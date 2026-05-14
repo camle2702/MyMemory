@@ -15,5 +15,6 @@ export interface MediaItemRepository {
     albumId?: string,
     onProgress?: (loaded: number, total: number) => void
   ): Promise<MediaItem>
+  assignToAlbum(id: string, albumId: string): Promise<void>
   delete(id: string): Promise<void>
 }

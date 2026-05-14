@@ -1,8 +1,7 @@
 import { useState, useEffect, type FC } from 'react'
-import type { Album } from '@domain/entities/Album'
+import type { AlbumWithStats } from '@domain/usecases/GetAlbums'
 import { useAlbums } from '../hooks/useAlbums'
 import { AlbumCard } from '../components/AlbumCard'
-import { MOCK_MEDIA_ITEMS } from '@data/mock/mockMediaItems'
 
 interface AlbumsPageProps {
   onAlbumClick: (albumId: string) => void
@@ -20,13 +19,8 @@ export const AlbumsPage: FC<AlbumsPageProps> = ({ onAlbumClick }) => {
     return () => clearTimeout(timer)
   }, [])
 
-  // Count mediaItems per album from mock data
-  const getPhotoCount = (albumId: string): number => {
-    return MOCK_MEDIA_ITEMS.filter(p => p.album_id === albumId).length
-  }
-
-  const handleAlbumClick = (album: Album) => {
-    onAlbumClick(album.id)
+  const handleAlbumClick = (albumId: string) => {
+    onAlbumClick(albumId)
   }
 
   return (
@@ -82,8 +76,8 @@ export const AlbumsPage: FC<AlbumsPageProps> = ({ onAlbumClick }) => {
             <AlbumCard
               key={album.id}
               album={album}
-              photoCount={getPhotoCount(album.id)}
-              onClick={handleAlbumClick}
+              photoCount={album.mediaCount}
+              onClick={() => handleAlbumClick(album.id)}
               index={index}
             />
           ))}

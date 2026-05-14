@@ -1,9 +1,11 @@
-import { type FC } from 'react'
+import { type FC, useState } from 'react'
+import type { MediaItem } from '@domain/entities/MediaItem'
 import { useAlbumDetail } from '../hooks/useAlbumDetail'
 import { useLightbox } from '../hooks/useLightbox'
 import { MediaCard } from '../components/MediaCard'
 import { Lightbox } from '../components/Lightbox'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
+import { AssignAlbumModal } from '../components/AssignAlbumModal'
 
 interface AlbumDetailPageProps {
   albumId: string
@@ -15,8 +17,9 @@ interface AlbumDetailPageProps {
  * Includes a back button, album info header, and lightbox.
  */
 export const AlbumDetailPage: FC<AlbumDetailPageProps> = ({ albumId, onBack }) => {
-  const { album, mediaItems, isLoading, error } = useAlbumDetail(albumId)
+  const { album, mediaItems, isLoading, error, refresh } = useAlbumDetail(albumId)
   const lightbox = useLightbox(mediaItems)
+  const [assigningMedia, setAssigningMedia] = useState<MediaItem | null>(null)
 
   return (
     <section className="album-detail">
@@ -65,6 +68,7 @@ export const AlbumDetailPage: FC<AlbumDetailPageProps> = ({ albumId, onBack }) =
                   key={mediaItem.id}
                   mediaItem={mediaItem}
                   onClick={lightbox.open}
+                  onAddToAlbum={setAssigningMedia}
                   index={index}
                 />
               ))}
@@ -90,6 +94,16 @@ export const AlbumDetailPage: FC<AlbumDetailPageProps> = ({ albumId, onBack }) =
         onClose={lightbox.close}
         onNext={lightbox.next}
         onPrev={lightbox.prev}
+        onAddToAlbum={setAssigningMedia}
+      />
+
+      <AssignAlbumModal
+        isOpen={assigningMedia !== null}
+        onClose={() => setAssigningMedia(null)}
+        mediaItem={assigningMedia}
+        onSuccess={() => {
+          refresh()
+        }}
       />
     </section>
   )

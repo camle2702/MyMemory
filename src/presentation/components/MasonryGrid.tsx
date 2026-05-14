@@ -5,13 +5,14 @@ import { MediaCard } from './MediaCard'
 interface MasonryGridProps {
   groups: TimelineGroup[]
   onPhotoClick: (mediaItem: MediaItem) => void
+  onAddToAlbum?: (mediaItem: MediaItem) => void
 }
 
 /**
  * MasonryGrid — Pinterest-style mediaItem grid grouped by month.
  * Uses CSS columns for true masonry layout.
  */
-export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick }) => {
+export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick, onAddToAlbum }) => {
   let globalIndex = 0
 
   return (
@@ -34,6 +35,7 @@ export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick }) => {
                   key={mediaItem.id}
                   mediaItem={mediaItem}
                   onClick={onPhotoClick}
+                  onAddToAlbum={onAddToAlbum}
                   index={idx}
                 />
               )

@@ -1,8 +1,10 @@
-import type { FC } from 'react'
+import { type FC, useState } from 'react'
+import type { MediaItem } from '@domain/entities/MediaItem'
 import { Hero } from '../components/Hero'
 import { MasonryGrid } from '../components/MasonryGrid'
 import { Lightbox } from '../components/Lightbox'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
+import { AssignAlbumModal } from '../components/AssignAlbumModal'
 import { useTimeline } from '../hooks/useTimeline'
 import { useLightbox } from '../hooks/useLightbox'
 
@@ -11,8 +13,9 @@ import { useLightbox } from '../hooks/useLightbox'
  * Header and Footer are now rendered by App.tsx (shared layout).
  */
 export const TimelinePage: FC = () => {
-  const { groups, allPhotos, isLoading, error } = useTimeline()
+  const { groups, allPhotos, isLoading, error, refresh } = useTimeline()
   const lightbox = useLightbox(allPhotos)
+  const [assigningMedia, setAssigningMedia] = useState<MediaItem | null>(null)
 
   return (
     <>
@@ -42,6 +45,7 @@ export const TimelinePage: FC = () => {
             <MasonryGrid
               groups={groups}
               onPhotoClick={lightbox.open}
+              onAddToAlbum={setAssigningMedia}
             />
           )}
         </div>
@@ -56,6 +60,16 @@ export const TimelinePage: FC = () => {
         onClose={lightbox.close}
         onNext={lightbox.next}
         onPrev={lightbox.prev}
+        onAddToAlbum={setAssigningMedia}
+      />
+
+      <AssignAlbumModal
+        isOpen={assigningMedia !== null}
+        onClose={() => setAssigningMedia(null)}
+        mediaItem={assigningMedia}
+        onSuccess={() => {
+          refresh()
+        }}
       />
     </>
   )

@@ -89,6 +89,14 @@ export class MockMediaItemRepository implements MediaItemRepository {
     return mapMediaItemFromDTO(newMediaItem as any)
   }
 
+  async assignToAlbum(id: string, albumId: string): Promise<void> {
+    await this.delay(200)
+    const item = this.mediaItems.find(p => p.id === id)
+    if (item) {
+      item.album_id = albumId
+    }
+  }
+
   async delete(id: string): Promise<void> {
     await this.delay(200)
     this.mediaItems = this.mediaItems.filter(p => p.id !== id)

@@ -6,7 +6,7 @@ import { observeElement, unobserveElement } from '../utils/intersectionObserver'
 interface AlbumCardProps {
   album: Album
   photoCount: number
-  onClick: (album: Album) => void
+  onClick: () => void
   index: number
 }
 
@@ -55,14 +55,14 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album, photoCount, onClick, inde
       style={{
         transitionDelay: `${index * 120}ms`,
       }}
-      onClick={() => onClick(album)}
+      onClick={onClick}
       role="button"
       tabIndex={0}
       aria-label={`Mở album: ${album.title}`}
       onKeyDown={(e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault()
-          onClick(album)
+          onClick()
         }
       }}
     >
