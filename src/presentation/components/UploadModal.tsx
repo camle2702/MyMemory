@@ -45,7 +45,7 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
     }, 800)
   }, [onSuccess])
 
-  const { isUploading, progress, error, success, upload, reset: resetUpload } = useUploadMedia(handleUploadSuccess)
+  const { isUploading, progress, loadedBytes, totalBytes, error, success, upload, reset: resetUpload } = useUploadMedia(handleUploadSuccess)
 
   // Lock body scroll when open
   useEffect(() => {
@@ -312,8 +312,11 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
                     }} 
                   />
                 </div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px', textAlign: 'right' }}>
-                  {progress}%
+                <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>{(progress || 0).toFixed(0)}%</span>
+                  <span>
+                    {((loadedBytes || 0) / (1024 * 1024)).toFixed(1)} / {((totalBytes || 0) / (1024 * 1024)).toFixed(1)} MB
+                  </span>
                 </div>
               </div>
             )}

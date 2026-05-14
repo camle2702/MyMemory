@@ -1,5 +1,8 @@
 import { MockMediaItemRepository } from '@data/repositories/MockMediaItemRepository'
 import { MockAlbumRepository } from '@data/repositories/MockAlbumRepository'
+import { SupabaseMediaItemRepository } from '@data/repositories/SupabaseMediaItemRepository'
+import { SupabaseAlbumRepository } from '@data/repositories/SupabaseAlbumRepository'
+import { supabase } from '@data/remote/supabaseClient'
 import { GetTimelineMedia } from '@domain/usecases/GetTimelineMedia'
 import { GetAlbums } from '@domain/usecases/GetAlbums'
 import { GetAlbumWithMedia } from '@domain/usecases/GetAlbumWithMedia'
@@ -14,8 +17,15 @@ import type { AlbumRepository } from '@domain/repositories/AlbumRepository'
  */
 
 // Repositories
-const mediaItemRepository: MediaItemRepository = new MockMediaItemRepository()
-const albumRepository: AlbumRepository = new MockAlbumRepository()
+const isSupabaseConfigured = supabase !== null;
+
+const mediaItemRepository: MediaItemRepository = isSupabaseConfigured 
+  ? new SupabaseMediaItemRepository() 
+  : new MockMediaItemRepository();
+
+const albumRepository: AlbumRepository = isSupabaseConfigured 
+  ? new SupabaseAlbumRepository() 
+  : new MockAlbumRepository();
 
 // Use Cases
 const getTimelinePhotos = new GetTimelineMedia(mediaItemRepository)
@@ -32,4 +42,6 @@ export const container = {
   getAlbumWithPhotos,
   uploadNewMedia,
   createAlbum,
+  isSupabaseConfigured, // Export flag to show warning in UI if needed
 } as const
+

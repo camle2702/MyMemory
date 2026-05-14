@@ -43,10 +43,25 @@ export class MockMediaItemRepository implements MediaItemRepository {
     caption: string,
     dateTaken: Date,
     albumId?: string,
+    onProgress?: (loaded: number, total: number) => void
   ): Promise<MediaItem> {
-    await this.delay(500)
-
     const isVideo = _file.type.startsWith('video/')
+    const totalSize = _file.size
+    
+    // Giả lập tiến trình tải lên cho mock
+    if (onProgress) {
+      let loaded = 0
+      const chunkSize = Math.max(totalSize / 10, 1024 * 50) // Giả lập nhảy từng chunk
+      
+      while (loaded < totalSize) {
+        await this.delay(100)
+        loaded = Math.min(loaded + chunkSize, totalSize)
+        onProgress(loaded, totalSize)
+      }
+    } else {
+      await this.delay(500)
+    }
+
     const newId = `p-${Date.now()}`
     
     // Create an object URL for the uploaded file

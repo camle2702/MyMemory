@@ -14,6 +14,7 @@ export class UploadNewMedia {
     caption: string,
     dateTaken: Date,
     albumId?: string,
+    onProgress?: (loaded: number, total: number) => void
   ): Promise<MediaItem> {
     const isImage = file.type.startsWith('image/')
     const isVideo = file.type.startsWith('video/')
@@ -30,6 +31,6 @@ export class UploadNewMedia {
       throw new Error('Vui lòng thêm caption cho ảnh')
     }
 
-    return this.mediaItemRepository.upload(file, caption.trim(), dateTaken, albumId)
+    return this.mediaItemRepository.upload(file, caption.trim(), dateTaken, albumId, onProgress)
   }
 }

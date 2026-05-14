@@ -8,6 +8,12 @@ export interface MediaItemRepository {
   getAll(): Promise<MediaItem[]>
   getById(id: string): Promise<MediaItem | null>
   getByAlbumId(albumId: string): Promise<MediaItem[]>
-  upload(file: File, caption: string, dateTaken: Date, albumId?: string): Promise<MediaItem>
+  upload(
+    file: File, 
+    caption: string, 
+    dateTaken: Date, 
+    albumId?: string,
+    onProgress?: (loaded: number, total: number) => void
+  ): Promise<MediaItem>
   delete(id: string): Promise<void>
 }
