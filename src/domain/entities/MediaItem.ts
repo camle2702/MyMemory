@@ -18,8 +18,9 @@ export interface MediaItem {
  * MediaItems grouped by a time period for timeline display.
  */
 export interface TimelineGroup {
-  readonly label: string        // e.g. "Tháng 5, 2026"
+  readonly label: string        // e.g. "Tháng 5, 2026" or "15 Tháng 5, 2026"
   readonly year: number
   readonly month: number
+  readonly day?: number         // Optional: only present if grouped by day
   readonly mediaItems: MediaItem[]
 }

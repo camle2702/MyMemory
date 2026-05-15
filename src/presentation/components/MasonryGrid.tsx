@@ -18,7 +18,7 @@ export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick, onAddT
   return (
     <div className="masonry-timeline">
       {groups.map(group => (
-        <section key={`${group.year}-${group.month}`} className="timeline-section">
+        <section key={group.label} className="timeline-section">
           {/* Month/Year label */}
           <div className="timeline-section__header">
             <div className="timeline-section__line" />

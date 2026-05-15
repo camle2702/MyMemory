@@ -18,7 +18,7 @@ export const ListTimeline: FC<ListTimelineProps> = ({ groups, onPhotoClick, onAd
   return (
     <div className="list-timeline-wrapper">
       {groups.map(group => (
-        <section key={`${group.year}-${group.month}`} className="timeline-section">
+        <section key={group.label} className="timeline-section">
           {/* Month/Year label */}
           <div className="timeline-section__header">
             <div className="timeline-section__line" />

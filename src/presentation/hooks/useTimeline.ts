@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import type { TimelineGroup, MediaItem } from '@domain/entities/MediaItem'
+import type { TimelineGroupBy } from '@domain/usecases/GetTimelineMedia'
 import { container } from '@/di/container'
 
 interface UseTimelineState {
@@ -23,11 +24,21 @@ export function useTimeline() {
     error: null,
   })
 
+  // Grouping mode state with localStorage persistence
+  const [groupBy, setGroupBy] = useState<TimelineGroupBy>(() => {
+    const saved = localStorage.getItem('myMemory_timelineGroupBy')
+    return (saved as TimelineGroupBy) || 'month'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('myMemory_timelineGroupBy', groupBy)
+  }, [groupBy])
+
   const fetchTimeline = useCallback(async () => {
     setState(prev => ({ ...prev, isLoading: true, error: null }))
 
     try {
-      const groups = await container.getTimelinePhotos.execute()
+      const groups = await container.getTimelinePhotos.execute(groupBy)
       const allPhotos = groups.flatMap(g => g.mediaItems)
 
       setState({
@@ -43,7 +54,7 @@ export function useTimeline() {
         error: err instanceof Error ? err.message : 'Đã xảy ra lỗi',
       }))
     }
-  }, [])
+  }, [groupBy])
 
   useEffect(() => {
     fetchTimeline()
@@ -51,6 +62,8 @@ export function useTimeline() {
 
   return {
     ...state,
+    groupBy,
+    setGroupBy,
     refresh: fetchTimeline,
   }
 }

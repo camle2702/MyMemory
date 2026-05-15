@@ -8,6 +8,7 @@ import { ViewSwitcher, type ViewMode } from '../components/ViewSwitcher'
 import { Lightbox } from '../components/Lightbox'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { AssignAlbumModal } from '../components/AssignAlbumModal'
+import { GroupingSwitcher } from '../components/GroupingSwitcher'
 import { useTimeline } from '../hooks/useTimeline'
 import { useLightbox } from '../hooks/useLightbox'
 
@@ -16,14 +17,14 @@ import { useLightbox } from '../hooks/useLightbox'
  * Header and Footer are now rendered by App.tsx (shared layout).
  */
 export const TimelinePage: FC = () => {
-  const { groups, allPhotos, isLoading, error, refresh } = useTimeline()
+  const { groups, allPhotos, isLoading, error, refresh, groupBy, setGroupBy } = useTimeline()
   const lightbox = useLightbox(allPhotos)
   const [assigningMedia, setAssigningMedia] = useState<MediaItem | null>(null)
 
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('myMemory_timelineViewMode')
-    return (saved as ViewMode) || 'masonry'
+    return (saved as ViewMode) || 'grid'
   })
 
   useEffect(() => {
@@ -36,9 +37,12 @@ export const TimelinePage: FC = () => {
 
       <section id="timeline" className="timeline-container">
         <div className="timeline-container__inner">
-          {/* View Switcher is only visible when we have data */}
+          {/* Controls are only visible when we have data */}
           {!isLoading && !error && groups.length > 0 && (
-            <ViewSwitcher currentMode={viewMode} onChange={setViewMode} />
+            <div className="timeline-controls">
+              <GroupingSwitcher currentValue={groupBy} onChange={setGroupBy} />
+              <ViewSwitcher currentMode={viewMode} onChange={setViewMode} />
+            </div>
           )}
 
           {isLoading && <LoadingSkeleton />}
