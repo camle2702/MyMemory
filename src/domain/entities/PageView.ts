@@ -17,6 +17,8 @@ export interface PageView {
   referrer: string
   /** When the visit happened */
   visitedAt: Date
+  /** Parsed device info for display (e.g. "iOS (iPhone)") */
+  deviceInfo?: string
 }
 
 /**

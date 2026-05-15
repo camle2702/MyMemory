@@ -40,8 +40,12 @@ export const AnalyticsPage: FC = () => {
   }
 
   const parseDeviceIcon = (device: string): string => {
-    if (device === 'Mobile') return '📱'
-    if (device === 'Tablet') return '📋'
+    if (device.includes('Android')) return '🤖'
+    if (device.includes('iOS')) return '🍎'
+    if (device.includes('Mobile')) return '📱'
+    if (device.includes('Tablet')) return '📋'
+    if (device.includes('Windows')) return '🪟'
+    if (device.includes('Mac')) return '🍏'
     return '🖥️'
   }
 
@@ -244,7 +248,9 @@ export const AnalyticsPage: FC = () => {
                           {formatPageName(visitor.page)}
                         </span>
                       </td>
-                      <td>{/mobile|android|iphone/i.test(visitor.userAgent) ? '📱 Mobile' : '🖥️ Desktop'}</td>
+                      <td>
+                        {parseDeviceIcon(visitor.deviceInfo || '')} {visitor.deviceInfo || 'Không rõ'}
+                      </td>
                       <td className="analytics-table__hide-mobile">{visitor.screenWidth}×{visitor.screenHeight}</td>
                     </tr>
                   ))}

@@ -6,15 +6,22 @@ import { container } from '@/di/container'
  * Placed once in App.tsx to track all navigation.
  */
 export function usePageTracking(page: string) {
-  const trackedRef = useRef<string | null>(null)
-
   useEffect(() => {
-    // Only track once per page navigation (avoid duplicate tracks on re-render)
-    if (trackedRef.current !== page) {
-      trackedRef.current = page
+    // Only track specific entry pages (e.g. timeline)
+    // The user doesn't want to track albums or analytics pages
+    const trackedPages = ['timeline']
+    if (!trackedPages.includes(page)) return
+
+    // Session-based tracking: only track once per session
+    const sessionKey = 'app_session_tracked'
+    const isAlreadyTrackedInSession = sessionStorage.getItem(sessionKey)
+
+    if (!isAlreadyTrackedInSession) {
       container.trackPageView.execute(page).catch(() => {
-        // Silently fail — analytics should never break the app
+        // Silently fail
       })
+      // Mark as tracked for this session
+      sessionStorage.setItem(sessionKey, 'true')
     }
   }, [page])
 }

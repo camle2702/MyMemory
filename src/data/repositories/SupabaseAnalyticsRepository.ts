@@ -49,6 +49,7 @@ export class SupabaseAnalyticsRepository implements AnalyticsRepository {
         screenHeight: row.screen_height,
         referrer: row.referrer,
         visitedAt: new Date(row.visited_at),
+        deviceInfo: this.parseDetailedDevice(row.user_agent),
       }))
 
       return this.aggregate(pageViews)
@@ -119,9 +120,41 @@ export class SupabaseAnalyticsRepository implements AnalyticsRepository {
   }
 
   private parseDeviceType(ua: string): string {
-    if (/mobile|android|iphone|ipad/i.test(ua)) return 'Mobile'
-    if (/tablet|ipad/i.test(ua)) return 'Tablet'
+    if (/android/i.test(ua)) return 'Android'
+    if (/iphone|ipad|ipod/i.test(ua)) return 'iOS'
+    if (/tablet/i.test(ua)) return 'Tablet'
+    if (/mobile/i.test(ua)) return 'Mobile'
     return 'Desktop'
+  }
+
+  private parseDetailedDevice(ua: string): string {
+    const isAndroid = /android/i.test(ua)
+    const isIOS = /iphone|ipad|ipod/i.test(ua)
+
+    if (isIOS) {
+      if (/iphone/i.test(ua)) return 'iOS (iPhone)'
+      if (/ipad/i.test(ua)) return 'iOS (iPad)'
+      return 'iOS'
+    }
+
+    if (isAndroid) {
+      // Try to extract Android model: "Android 13; SM-S901B"
+      const modelMatch = ua.match(/Android\s+[^;]+;\s+([^;)]+)/i)
+      if (modelMatch && modelMatch[1]) {
+        const model = modelMatch[1].trim()
+        // Filter out some generic names like "K" or "Mobile"
+        if (model.length > 1 && !/mobile|wv/i.test(model)) {
+          return `Android (${model})`
+        }
+      }
+      return 'Android'
+    }
+
+    if (/windows/i.test(ua)) return 'Desktop (Windows)'
+    if (/macintosh/i.test(ua)) return 'Desktop (Mac)'
+    if (/linux/i.test(ua)) return 'Desktop (Linux)'
+
+    return this.parseDeviceType(ua)
   }
 
   private emptySummary(): AnalyticsSummary {
