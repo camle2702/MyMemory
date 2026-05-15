@@ -130,10 +130,18 @@ button {
   top: 0;
   z-index: 100;
   background: rgba(250, 248, 245, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-border-subtle);
   transition: box-shadow 0.3s var(--ease-out);
+  contain: layout style;
+}
+
+@media (max-width: 768px) {
+  .header {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .header:hover {
@@ -231,7 +239,16 @@ button {
   position: absolute;
   border-radius: 50%;
   opacity: 0.15;
-  filter: blur(80px);
+  filter: blur(60px);
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .hero__shape {
+    filter: blur(30px);
+    opacity: 0.1;
+  }
+  .hero__shape--3 { display: none; }
 }
 
 .hero__shape--1 {
@@ -562,13 +579,20 @@ button {
 .grouping-switcher {
   display: flex;
   background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 4px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
   border: 1px solid rgba(255, 255, 255, 0.5);
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .grouping-switcher {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .grouping-switcher__btn {
@@ -609,13 +633,20 @@ button {
 .view-switcher {
   display: flex;
   background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 4px;
   border-radius: var(--radius-full);
   box-shadow: var(--shadow-sm);
   border: 1px solid rgba(255, 255, 255, 0.5);
   position: relative;
+}
+
+@media (max-width: 768px) {
+  .view-switcher {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
 
 .view-switcher__btn {

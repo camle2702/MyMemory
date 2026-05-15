@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, memo } from 'react'
 import type { MediaItem, TimelineGroup } from '@domain/entities/MediaItem'
 import { MediaCard } from './MediaCard'
 
@@ -12,7 +12,7 @@ interface MasonryGridProps {
  * MasonryGrid — Pinterest-style mediaItem grid grouped by month.
  * Uses CSS columns for true masonry layout.
  */
-export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick, onAddToAlbum }) => {
+export const MasonryGrid: FC<MasonryGridProps> = memo(({ groups, onPhotoClick, onAddToAlbum }) => {
   let globalIndex = 0
 
   return (
@@ -45,4 +45,4 @@ export const MasonryGrid: FC<MasonryGridProps> = ({ groups, onPhotoClick, onAddT
       ))}
     </div>
   )
-}
+})

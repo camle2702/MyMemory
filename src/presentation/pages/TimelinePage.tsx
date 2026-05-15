@@ -64,29 +64,38 @@ export const TimelinePage: FC = () => {
           )}
 
           {!isLoading && !error && groups.length > 0 && (
-            <>
-              {viewMode === 'masonry' && (
-                <MasonryGrid
-                  groups={groups}
-                  onPhotoClick={lightbox.open}
-                  onAddToAlbum={setAssigningMedia}
-                />
-              )}
-              {viewMode === 'grid' && (
-                <SquareGrid
-                  groups={groups}
-                  onPhotoClick={lightbox.open}
-                  onAddToAlbum={setAssigningMedia}
-                />
-              )}
-              {viewMode === 'list' && (
-                <ListTimeline
-                  groups={groups}
-                  onPhotoClick={lightbox.open}
-                  onAddToAlbum={setAssigningMedia}
-                />
-              )}
-            </>
+            <div className="grid-container">
+              {(() => {
+                switch (viewMode) {
+                  case 'masonry':
+                    return (
+                      <MasonryGrid
+                        groups={groups}
+                        onPhotoClick={lightbox.open}
+                        onAddToAlbum={setAssigningMedia}
+                      />
+                    )
+                  case 'grid':
+                    return (
+                      <SquareGrid
+                        groups={groups}
+                        onPhotoClick={lightbox.open}
+                        onAddToAlbum={setAssigningMedia}
+                      />
+                    )
+                  case 'list':
+                    return (
+                      <ListTimeline
+                        groups={groups}
+                        onPhotoClick={lightbox.open}
+                        onAddToAlbum={setAssigningMedia}
+                      />
+                    )
+                  default:
+                    return null
+                }
+              })()}
+            </div>
           )}
         </div>
       </section>

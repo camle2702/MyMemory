@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, memo } from 'react'
 import type { MediaItem, TimelineGroup } from '@domain/entities/MediaItem'
 import { MediaCard } from './MediaCard'
 
@@ -12,7 +12,7 @@ interface ListTimelineProps {
  * ListTimeline — Feed-style 1-column layout.
  * Shows full images and prominent captions, great for reading details.
  */
-export const ListTimeline: FC<ListTimelineProps> = ({ groups, onPhotoClick, onAddToAlbum }) => {
+export const ListTimeline: FC<ListTimelineProps> = memo(({ groups, onPhotoClick, onAddToAlbum }) => {
   let globalIndex = 0
 
   return (
@@ -45,4 +45,4 @@ export const ListTimeline: FC<ListTimelineProps> = ({ groups, onPhotoClick, onAd
       ))}
     </div>
   )
-}
+})

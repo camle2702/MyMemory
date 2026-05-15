@@ -1,4 +1,4 @@
-import { type FC } from 'react'
+import { type FC, memo } from 'react'
 import type { MediaItem, TimelineGroup } from '@domain/entities/MediaItem'
 import { MediaCard } from './MediaCard'
 
@@ -12,7 +12,7 @@ interface SquareGridProps {
  * SquareGrid — Instagram-style uniform square grid.
  * Uses CSS grid for a clean, tightly packed layout.
  */
-export const SquareGrid: FC<SquareGridProps> = ({ groups, onPhotoClick, onAddToAlbum }) => {
+export const SquareGrid: FC<SquareGridProps> = memo(({ groups, onPhotoClick, onAddToAlbum }) => {
   let globalIndex = 0
 
   return (
@@ -45,4 +45,4 @@ export const SquareGrid: FC<SquareGridProps> = ({ groups, onPhotoClick, onAddToA
       ))}
     </div>
   )
-}
+})
