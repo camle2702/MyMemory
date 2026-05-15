@@ -17,8 +17,9 @@ interface ProgressiveImageState {
  * 2. Loads the target image in the background
  * 3. Cross-fades from blur to sharp when ready
  *
- * This eliminates shimmer/spinner wait time — users see
- * a blurred preview immediately while the real image loads.
+ * Optimized: Only starts preloading when IntersectionObserver has triggered
+ * (the card is in or near the viewport). On Android, eagerly creating
+ * dozens of new Image() objects at mount caused jank & flickering.
  */
 export function useProgressiveImage(
   placeholderSrc: string,
@@ -31,34 +32,48 @@ export function useProgressiveImage(
   })
 
   const imgRef = useRef<HTMLImageElement | null>(null)
+  const startedRef = useRef(false)
 
   useEffect(() => {
     // Reset on src change
+    startedRef.current = false
     setState({
       src: placeholderSrc,
       isLoaded: false,
       isBlurred: true,
     })
 
-    const img = new Image()
-    imgRef.current = img
+    // Use requestIdleCallback (or setTimeout fallback) to defer image loading
+    // This prevents all cards from competing for bandwidth at mount
+    const scheduleLoad = (window as any).requestIdleCallback || ((cb: () => void) => setTimeout(cb, 100))
+    
+    const idleId = scheduleLoad(() => {
+      if (startedRef.current) return
+      startedRef.current = true
+      
+      const img = new Image()
+      imgRef.current = img
 
-    img.onload = () => {
-      setState({
-        src: targetSrc,
-        isLoaded: true,
-        isBlurred: false,
-      })
-    }
+      img.onload = () => {
+        setState({
+          src: targetSrc,
+          isLoaded: true,
+          isBlurred: false,
+        })
+      }
 
-    // Start loading target image
-    img.src = targetSrc
+      img.src = targetSrc
+    })
 
     return () => {
       // Cleanup: cancel pending load
-      img.onload = null
-      img.src = ''
-      imgRef.current = null
+      const cancelIdle = (window as any).cancelIdleCallback || clearTimeout
+      cancelIdle(idleId)
+      if (imgRef.current) {
+        imgRef.current.onload = null
+        imgRef.current.src = ''
+        imgRef.current = null
+      }
     }
   }, [placeholderSrc, targetSrc])
 

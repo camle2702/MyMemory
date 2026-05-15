@@ -409,25 +409,29 @@ button {
   overflow: hidden;
   cursor: pointer;
   background: var(--color-surface-elevated);
-  /* Scroll Animation initial state */
+  /* Scroll Animation initial state — use translate3d for GPU layer */
   opacity: 0;
-  transform: translateY(24px);
-  /* Performance Boost */
-  content-visibility: auto;
-  contain-intrinsic-size: 300px; /* Approximate height to prevent scrollbar jumping */
-  transition: opacity 0.6s var(--ease-out),
-              transform 0.6s var(--ease-out),
-              box-shadow 0.3s var(--ease-out);
+  transform: translate3d(0, 24px, 0);
+  /* GPU compositing hint — only during animation */
+  will-change: opacity, transform;
+  transition: opacity 0.5s var(--ease-out),
+              transform 0.5s var(--ease-out);
 }
 
 .mediaItem-card.is-visible {
   opacity: 1;
-  transform: translateY(0);
+  transform: translate3d(0, 0, 0);
+  /* Remove will-change after animation to free GPU memory */
+  will-change: auto;
 }
 
-.mediaItem-card:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-4px) !important;
+@media (hover: hover) {
+  .mediaItem-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-4px) !important;
+    transition: transform 0.3s var(--ease-out),
+                box-shadow 0.3s var(--ease-out);
+  }
 }
 
 .mediaItem-card__shimmer {
@@ -456,8 +460,7 @@ button {
   transform: translate(-50%, -50%);
   width: 48px;
   height: 48px;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.5);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -470,23 +473,25 @@ button {
 .mediaItem-card__image {
   width: 100%;
   display: block;
-  transition: opacity 0.4s var(--ease-out),
-              transform 5s var(--ease-out),
-              filter 0.6s var(--ease-out);
+  transition: opacity 0.4s var(--ease-out);
 }
 
 .mediaItem-card__image--loaded {
   opacity: 1;
 }
 
-/* Blur-up: tiny placeholder is scaled up and blurred */
+/* Blur-up: tiny placeholder is scaled up and blurred.
+   Use a lighter blur on mobile to reduce GPU cost. */
 .mediaItem-card__image--blur {
-  filter: blur(12px);
-  transform: scale(1.05);
+  filter: blur(8px);
+  transform: scale(1.02);
 }
 
-.mediaItem-card:hover .mediaItem-card__image--loaded:not(.mediaItem-card__image--blur) {
-  transform: scale(1.03);
+@media (hover: hover) {
+  .mediaItem-card:hover .mediaItem-card__image--loaded:not(.mediaItem-card__image--blur) {
+    transform: scale(1.03);
+    transition: transform 0.6s var(--ease-out);
+  }
 }
 
 .mediaItem-card__overlay {
@@ -504,11 +509,15 @@ button {
   padding: var(--space-5);
   opacity: 0;
   transition: opacity 0.3s var(--ease-out);
+  /* Prevent overlay from rendering on touch devices (perf + UX) */
+  pointer-events: none;
 }
 
-.mediaItem-card:hover .mediaItem-card__overlay,
-.mediaItem-card:focus-visible .mediaItem-card__overlay {
-  opacity: 1;
+@media (hover: hover) {
+  .mediaItem-card:hover .mediaItem-card__overlay,
+  .mediaItem-card:focus-visible .mediaItem-card__overlay {
+    opacity: 1;
+  }
 }
 
 .mediaItem-card__caption {
