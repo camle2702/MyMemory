@@ -1,6 +1,7 @@
 import { useState, useCallback, type FC } from 'react'
 import { useRouter } from './presentation/hooks/useRouter'
 import { useAlbums } from './presentation/hooks/useAlbums'
+import { usePageTracking } from './presentation/hooks/usePageTracking'
 import { Header } from './presentation/components/Header'
 import { Footer } from './presentation/components/Footer'
 import { UploadModal } from './presentation/components/UploadModal'
@@ -8,6 +9,7 @@ import { CreateAlbumModal } from './presentation/components/CreateAlbumModal'
 import { TimelinePage } from './presentation/pages/TimelinePage'
 import { AlbumsPage } from './presentation/pages/AlbumsPage'
 import { AlbumDetailPage } from './presentation/pages/AlbumDetailPage'
+import { AnalyticsPage } from './presentation/pages/AnalyticsPage'
 
 const App: FC = () => {
   const { route, navigate } = useRouter()
@@ -16,7 +18,10 @@ const App: FC = () => {
   const [isCreateAlbumOpen, setIsCreateAlbumOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
 
-  const handleNavigate = (page: 'timeline' | 'albums') => {
+  // Track page views automatically
+  usePageTracking(route.page)
+
+  const handleNavigate = (page: 'timeline' | 'albums' | 'analytics') => {
     navigate({ page })
   }
 
@@ -50,6 +55,8 @@ const App: FC = () => {
             onBack={() => navigate({ page: 'albums' })}
           />
         )
+      case 'analytics':
+        return <AnalyticsPage key={refreshKey} />
     }
   }
 
@@ -61,6 +68,9 @@ const App: FC = () => {
     }
   }
 
+  // Hide FAB on analytics page
+  const showFab = route.page !== 'analytics'
+
   return (
     <>
       <Header currentPage={route.page} onNavigate={handleNavigate} />
@@ -70,24 +80,26 @@ const App: FC = () => {
       <Footer />
 
       {/* Floating action button */}
-      <button
-        className="fab"
-        onClick={handleFabClick}
-        aria-label={route.page === 'albums' ? 'Tạo album mới' : 'Tải ảnh lên'}
-      >
-        {route.page === 'albums' ? (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-            <line x1="12" y1="8" x2="12" y2="16" />
-            <line x1="8" y1="12" x2="16" y2="12" />
-          </svg>
-        ) : (
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        )}
-      </button>
+      {showFab && (
+        <button
+          className="fab"
+          onClick={handleFabClick}
+          aria-label={route.page === 'albums' ? 'Tạo album mới' : 'Tải ảnh lên'}
+        >
+          {route.page === 'albums' ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="12" y1="8" x2="12" y2="16" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" />
+              <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          )}
+        </button>
+      )}
 
       {/* Upload modal */}
       <UploadModal
@@ -109,3 +121,4 @@ const App: FC = () => {
 }
 
 export default App
+

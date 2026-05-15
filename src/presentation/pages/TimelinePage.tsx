@@ -1,7 +1,10 @@
-import { type FC, useState } from 'react'
+import { type FC, useState, useEffect } from 'react'
 import type { MediaItem } from '@domain/entities/MediaItem'
 import { Hero } from '../components/Hero'
 import { MasonryGrid } from '../components/MasonryGrid'
+import { SquareGrid } from '../components/SquareGrid'
+import { ListTimeline } from '../components/ListTimeline'
+import { ViewSwitcher, type ViewMode } from '../components/ViewSwitcher'
 import { Lightbox } from '../components/Lightbox'
 import { LoadingSkeleton } from '../components/LoadingSkeleton'
 import { AssignAlbumModal } from '../components/AssignAlbumModal'
@@ -17,12 +20,27 @@ export const TimelinePage: FC = () => {
   const lightbox = useLightbox(allPhotos)
   const [assigningMedia, setAssigningMedia] = useState<MediaItem | null>(null)
 
+  // View mode state with localStorage persistence
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const saved = localStorage.getItem('myMemory_timelineViewMode')
+    return (saved as ViewMode) || 'masonry'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('myMemory_timelineViewMode', viewMode)
+  }, [viewMode])
+
   return (
     <>
       <Hero />
 
       <section id="timeline" className="timeline-container">
         <div className="timeline-container__inner">
+          {/* View Switcher is only visible when we have data */}
+          {!isLoading && !error && groups.length > 0 && (
+            <ViewSwitcher currentMode={viewMode} onChange={setViewMode} />
+          )}
+
           {isLoading && <LoadingSkeleton />}
 
           {error && (
@@ -42,11 +60,29 @@ export const TimelinePage: FC = () => {
           )}
 
           {!isLoading && !error && groups.length > 0 && (
-            <MasonryGrid
-              groups={groups}
-              onPhotoClick={lightbox.open}
-              onAddToAlbum={setAssigningMedia}
-            />
+            <>
+              {viewMode === 'masonry' && (
+                <MasonryGrid
+                  groups={groups}
+                  onPhotoClick={lightbox.open}
+                  onAddToAlbum={setAssigningMedia}
+                />
+              )}
+              {viewMode === 'grid' && (
+                <SquareGrid
+                  groups={groups}
+                  onPhotoClick={lightbox.open}
+                  onAddToAlbum={setAssigningMedia}
+                />
+              )}
+              {viewMode === 'list' && (
+                <ListTimeline
+                  groups={groups}
+                  onPhotoClick={lightbox.open}
+                  onAddToAlbum={setAssigningMedia}
+                />
+              )}
+            </>
           )}
         </div>
       </section>

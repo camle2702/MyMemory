@@ -20,8 +20,8 @@ interface UploadModalProps {
  * - Upload progress with success/error feedback
  */
 export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbumId, onClose, onSuccess }) => {
-  const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [files, setFiles] = useState<File[]>([])
+  const [previews, setPreviews] = useState<string[]>([])
   const [caption, setCaption] = useState('')
   const [dateTaken, setDateTaken] = useState(new Date().toISOString().slice(0, 10))
   const [albumId, setAlbumId] = useState(initialAlbumId || '')
@@ -68,8 +68,9 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
   }, [isOpen, isUploading, onClose])
 
   const resetForm = () => {
-    setFile(null)
-    setPreview(null)
+    setFiles([])
+    previews.forEach(p => URL.revokeObjectURL(p))
+    setPreviews([])
     setCaption('')
     setDateTaken(new Date().toISOString().slice(0, 10))
     setAlbumId(initialAlbumId || '')
@@ -86,22 +87,25 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
     if (e.target === backdropRef.current) handleClose()
   }
 
-  // File selection
-  const handleFileSelect = (selectedFile: File) => {
-    const isImage = selectedFile.type.startsWith('image/')
-    const isVideo = selectedFile.type.startsWith('video/')
-    if (!isImage && !isVideo) return
+  const handleFileSelect = (selectedFiles: FileList | File[]) => {
+    const validFiles = Array.from(selectedFiles).filter(
+      f => f.type.startsWith('image/') || f.type.startsWith('video/')
+    )
+    if (validFiles.length === 0) return
     
-    setFile(selectedFile)
-    const url = URL.createObjectURL(selectedFile)
-    setPreview(url)
+    setFiles(prev => [...prev, ...validFiles])
+    
+    const newPreviews = validFiles.map(f => URL.createObjectURL(f))
+    setPreviews(prev => [...prev, ...newPreviews])
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (f) handleFileSelect(f)
+    if (e.target.files && e.target.files.length > 0) {
+      handleFileSelect(e.target.files)
+    }
+    // Cho phép chọn lại cùng 1 file (hoặc file khác) ở lần tiếp theo
+    e.target.value = ''
   }
-
   // Drag & drop
   const handleDragOver = (e: DragEvent) => {
     e.preventDefault()
@@ -116,17 +120,17 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
   const handleDrop = (e: DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    const f = e.dataTransfer.files[0]
-    if (f) handleFileSelect(f)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleFileSelect(e.dataTransfer.files)
+    }
   }
 
   const handleSubmit = async () => {
-    if (!file || !caption.trim()) return
-    await upload(file, caption, new Date(dateTaken), albumId || undefined)
+    if (files.length === 0) return
+    await upload(files, caption, new Date(dateTaken), albumId || undefined)
   }
 
-  const isFormValid = file && caption.trim().length > 0
-  const isVideo = file?.type.startsWith('video/')
+  const isFormValid = files.length > 0
 
   if (!isOpen) return null
 
@@ -158,8 +162,19 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
 
         {/* Body */}
         <div className="upload-modal__body">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,video/mp4,video/quicktime,video/webm"
+            multiple
+            onChange={handleInputChange}
+            className="upload-modal__file-input"
+            aria-label="Chọn file"
+            style={{ display: 'none' }}
+          />
+
           {/* Drop zone / Preview */}
-          {!preview ? (
+          {previews.length === 0 ? (
             <div
               className={`upload-modal__dropzone ${isDragging ? 'upload-modal__dropzone--active' : ''}`}
               onDragOver={handleDragOver}
@@ -175,14 +190,6 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
                 }
               }}
             >
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*,video/mp4,video/quicktime,video/webm"
-                onChange={handleInputChange}
-                className="upload-modal__file-input"
-                aria-label="Chọn file"
-              />
               <div className="upload-modal__dropzone-icon">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -198,34 +205,84 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
               </p>
             </div>
           ) : (
-            <div className="upload-modal__preview">
-              {isVideo ? (
-                <video
-                  src={preview}
-                  controls
-                  className="upload-modal__preview-video"
-                  style={{ width: '100%', maxHeight: '300px', objectFit: 'contain', background: '#000', display: 'block' }}
-                />
-              ) : (
-                <img
-                  src={preview}
-                  alt="Xem trước"
-                  className="upload-modal__preview-image"
-                />
-              )}
+            <div className="upload-modal__preview-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+              gap: 'var(--space-2)',
+              maxHeight: '300px',
+              overflowY: 'auto',
+              padding: 'var(--space-2)'
+            }}>
+              {files.map((file, idx) => {
+                const isVideo = file.type.startsWith('video/');
+                return (
+                  <div key={idx} style={{ position: 'relative', aspectRatio: '1/1', background: '#000', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+                    {isVideo ? (
+                      <video
+                        src={previews[idx]}
+                        className="upload-modal__preview-video"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    ) : (
+                      <img
+                        src={previews[idx]}
+                        alt={`Xem trước ${idx + 1}`}
+                        className="upload-modal__preview-image"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      />
+                    )}
+                    <button
+                      className="upload-modal__preview-remove"
+                      onClick={() => {
+                        setFiles(prev => prev.filter((_, i) => i !== idx))
+                        URL.revokeObjectURL(previews[idx])
+                        setPreviews(prev => prev.filter((_, i) => i !== idx))
+                      }}
+                      aria-label="Xóa file này"
+                      disabled={isUploading}
+                      style={{
+                        position: 'absolute',
+                        top: '4px',
+                        right: '4px',
+                        background: 'rgba(0,0,0,0.5)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '50%',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                      </svg>
+                    </button>
+                  </div>
+                )
+              })}
+              
               <button
-                className="upload-modal__preview-remove"
-                onClick={() => {
-                  setFile(null)
-                  if (preview) URL.revokeObjectURL(preview)
-                  setPreview(null)
-                }}
-                aria-label="Xóa file đã chọn"
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading}
+                style={{
+                  aspectRatio: '1/1',
+                  border: '2px dashed var(--color-sand-200)',
+                  borderRadius: 'var(--radius-md)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'var(--color-sand-400)'
+                }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
               </button>
             </div>
@@ -237,7 +294,7 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
             <div className="upload-modal__field">
               <label htmlFor="uploadCaption" className="upload-modal__label">
                 Caption
-                <span className="upload-modal__required">*</span>
+                <span className="upload-modal__optional" style={{ fontWeight: 'normal', color: 'var(--color-text-muted)', fontSize: '0.75rem', marginLeft: 'var(--space-2)' }}>(không bắt buộc)</span>
               </label>
               <textarea
                 id="uploadCaption"

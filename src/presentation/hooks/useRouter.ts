@@ -4,6 +4,7 @@ export type Route =
   | { page: 'timeline' }
   | { page: 'albums' }
   | { page: 'album-detail'; albumId: string }
+  | { page: 'analytics' }
 
 /**
  * useRouter — Lightweight hash-based router.
@@ -13,6 +14,7 @@ export function useRouter() {
   const parseHash = (): Route => {
     const hash = window.location.hash.slice(1) // remove #
     if (hash === 'albums') return { page: 'albums' }
+    if (hash === 'analytics') return { page: 'analytics' }
     if (hash.startsWith('album/')) {
       const albumId = hash.slice('album/'.length)
       return { page: 'album-detail', albumId }
@@ -40,9 +42,13 @@ export function useRouter() {
       case 'album-detail':
         hash = `#album/${newRoute.albumId}`
         break
+      case 'analytics':
+        hash = '#analytics'
+        break
     }
     window.location.hash = hash
   }, [])
 
   return { route, navigate }
 }
+

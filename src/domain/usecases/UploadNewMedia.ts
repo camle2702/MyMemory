@@ -27,10 +27,6 @@ export class UploadNewMedia {
       throw new Error('File không được vượt quá 200MB')
     }
 
-    if (!caption.trim()) {
-      throw new Error('Vui lòng thêm caption cho ảnh')
-    }
-
-    return this.mediaItemRepository.upload(file, caption.trim(), dateTaken, albumId, onProgress)
+    return this.mediaItemRepository.upload(file, caption ? caption.trim() : '', dateTaken, albumId, onProgress)
   }
 }

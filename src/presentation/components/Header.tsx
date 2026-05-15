@@ -2,7 +2,7 @@ import type { FC } from 'react'
 
 interface HeaderProps {
   currentPage: string
-  onNavigate: (page: 'timeline' | 'albums') => void
+  onNavigate: (page: 'timeline' | 'albums' | 'analytics') => void
 }
 
 /**
@@ -41,8 +41,15 @@ export const Header: FC<HeaderProps> = ({ currentPage, onNavigate }) => {
           >
             Albums
           </button>
+          <button
+            className={`header__link ${currentPage === 'analytics' ? 'header__link--active' : ''}`}
+            onClick={() => onNavigate('analytics')}
+          >
+            Thống kê
+          </button>
         </nav>
       </div>
     </header>
   )
 }
+

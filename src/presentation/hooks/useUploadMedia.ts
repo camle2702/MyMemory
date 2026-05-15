@@ -24,54 +24,62 @@ export function useUploadMedia(onSuccess?: () => void) {
   })
 
   const upload = useCallback(async (
-    file: File,
+    files: File[],
     caption: string,
     dateTaken: Date,
     albumId?: string,
   ) => {
+    if (files.length === 0) return;
+    
+    const totalBytesAll = files.reduce((acc, f) => acc + f.size, 0);
+    
     setState({ 
       isUploading: true, 
       progress: 0, 
       loadedBytes: 0, 
-      totalBytes: file.size, 
+      totalBytes: totalBytesAll, 
       error: null, 
       success: false 
     })
 
     try {
-      await container.uploadNewMedia.execute(
-        file, 
-        caption, 
-        dateTaken, 
-        albumId,
-        (loaded, total) => {
-          setState(prev => ({
-            ...prev,
-            loadedBytes: loaded,
-            totalBytes: total,
-            progress: Math.round((loaded / total) * 100)
-          }))
-        }
-      )
+      let completedBytes = 0;
+      
+      for (const file of files) {
+        await container.uploadNewMedia.execute(
+          file, 
+          caption, 
+          dateTaken, 
+          albumId,
+          (loaded) => {
+            // loaded is the progress of the CURRENT file
+            const overallLoaded = completedBytes + loaded;
+            setState(prev => ({
+              ...prev,
+              loadedBytes: overallLoaded,
+              progress: Math.round((overallLoaded / totalBytesAll) * 100)
+            }))
+          }
+        )
+        completedBytes += file.size;
+      }
       
       setState({ 
         isUploading: false, 
         progress: 100, 
-        loadedBytes: file.size, 
-        totalBytes: file.size, 
+        loadedBytes: totalBytesAll, 
+        totalBytes: totalBytesAll, 
         error: null, 
         success: true 
       })
       onSuccess?.()
     } catch (err) {
-      setState({
+      setState(prev => ({
+        ...prev,
         isUploading: false,
-        progress: 0,
-        loadedBytes: 0,
-        totalBytes: 0,
         error: err instanceof Error ? err.message : 'Đã xảy ra lỗi khi tải file',
         success: false,
-      })
+      }))
     }
   }, [onSuccess])
 
