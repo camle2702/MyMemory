@@ -1,4 +1,8 @@
 import type { MediaItem } from '@domain/entities/MediaItem'
+import {
+  buildImagePlaceholderUrl,
+  buildTimelineThumbnailUrl,
+} from '@/shared/mediaUrls'
 
 /**
  * Data Transfer Object for mediaItems from Supabase.
@@ -11,36 +15,22 @@ export interface MediaItemDTO {
   url: string
   thumbnail_url: string
   caption: string
-  date_taken: string  // ISO string from DB
-  created_at: string  // ISO string from DB
-}
-
-/**
- * Derives a tiny blurred placeholder URL from an Unsplash URL.
- * Falls back to thumbnail if URL is not Unsplash format.
- */
-function derivePlaceholderUrl(urlStr: string): string {
-  try {
-    const url = new URL(urlStr)
-    if (url.hostname.includes('unsplash.com')) {
-      url.searchParams.set('w', '20')
-      url.searchParams.set('q', '10')
-      return url.toString()
-    }
-  } catch {
-    // Not a valid URL — return as-is
-  }
-  return urlStr
+  date_taken: string
+  created_at: string
 }
 
 export function mapMediaItemFromDTO(dto: MediaItemDTO): MediaItem {
+  const originalUrl = dto.url || (dto as any).image_url || ''
+  const thumbnailSource = dto.thumbnail_url || originalUrl
+  const isImage = (dto.media_type || 'image') === 'image'
+
   return {
     id: dto.id,
     albumId: dto.album_id,
-    mediaType: dto.media_type || 'image', // fallback for old data if any
-    url: dto.url || (dto as any).image_url,
-    thumbnailUrl: dto.thumbnail_url,
-    placeholderUrl: derivePlaceholderUrl(dto.thumbnail_url || (dto as any).image_url || ''),
+    mediaType: dto.media_type || 'image',
+    url: originalUrl,
+    thumbnailUrl: isImage ? buildTimelineThumbnailUrl(thumbnailSource) : thumbnailSource,
+    placeholderUrl: isImage ? buildImagePlaceholderUrl(thumbnailSource) : '',
     caption: dto.caption,
     dateTaken: new Date(dto.date_taken),
     createdAt: new Date(dto.created_at),

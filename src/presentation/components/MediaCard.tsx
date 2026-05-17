@@ -1,7 +1,11 @@
-import { useEffect, useRef, type FC, memo } from 'react'
+import { useEffect, useRef, useState, type FC, memo } from 'react'
 import type { MediaItem } from '@domain/entities/MediaItem'
-import { useProgressiveImage } from '../hooks/useProgressiveImage'
 import { observeElement, unobserveElement } from '../utils/intersectionObserver'
+import {
+  buildImagePlaceholderUrl,
+  buildImageVariantUrl,
+  buildTimelineThumbnailUrl,
+} from '@/shared/mediaUrls'
 
 interface MediaCardProps {
   mediaItem: MediaItem
@@ -11,20 +15,18 @@ interface MediaCardProps {
 }
 
 /**
- * MediaCard — A single mediaItem in the masonry grid.
- * Uses blur-up progressive loading: tiny placeholder → thumbnail.
- * Full quality image is only loaded when opening the lightbox.
- * 
- * Wrapped in React.memo to prevent unnecessary re-renders during scrolling.
+ * MediaCard - A single media item in the timeline grids.
+ * Uses tiny placeholder -> responsive thumbnail. Full quality loads in lightbox only.
  */
 export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddToAlbum, index }) => {
   const ref = useRef<HTMLDivElement>(null)
+  const [isLoaded, setIsLoaded] = useState(mediaItem.mediaType === 'video')
+  const thumbnailSrc = buildTimelineThumbnailUrl(mediaItem.thumbnailUrl || mediaItem.url)
+  const placeholderSrc = mediaItem.placeholderUrl || buildImagePlaceholderUrl(thumbnailSrc)
 
-  // Progressive loading: placeholder (w=20 blur) → thumbnail (w=300)
-  const { src, isLoaded, isBlurred } = useProgressiveImage(
-    mediaItem.placeholderUrl,
-    mediaItem.thumbnailUrl,
-  )
+  useEffect(() => {
+    setIsLoaded(mediaItem.mediaType === 'video')
+  }, [mediaItem.id, mediaItem.mediaType])
 
   useEffect(() => {
     const el = ref.current
@@ -38,7 +40,7 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
     }
   }, [])
 
-  // Cap stagger delay at 6 items per batch, max ~400ms
+  // Cap stagger delay at 6 items per batch, max ~400ms.
   const staggerDelay = (index % 6) * 60
 
   return (
@@ -61,25 +63,33 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
         <video
           src={`${mediaItem.thumbnailUrl}#t=0.001`}
           className="mediaItem-card__image mediaItem-card__image--loaded"
-          style={{ 
-            minHeight: '240px', 
+          style={{
+            minHeight: '240px',
             backgroundColor: 'var(--color-sand-100)',
-            objectFit: 'cover'
+            objectFit: 'cover',
           }}
           preload="metadata"
           muted
           playsInline
           onLoadedData={(e) => {
-            e.currentTarget.dataset.loaded = "true";
+            e.currentTarget.dataset.loaded = 'true'
           }}
         />
       ) : (
         <img
-          src={src}
+          src={thumbnailSrc}
+          srcSet={[
+            `${buildImageVariantUrl(thumbnailSrc, { width: 320, quality: 65 })} 320w`,
+            `${buildImageVariantUrl(thumbnailSrc, { width: 480, quality: 70 })} 480w`,
+            `${buildImageVariantUrl(thumbnailSrc, { width: 640, quality: 72 })} 640w`,
+          ].join(', ')}
+          sizes="(max-width: 640px) 45vw, (max-width: 1024px) 30vw, 320px"
           alt={mediaItem.caption || 'Ảnh kỷ niệm'}
           loading="lazy"
           decoding="async"
-          className={`mediaItem-card__image mediaItem-card__image--loaded ${isBlurred ? 'mediaItem-card__image--blur' : ''}`}
+          className={`mediaItem-card__image mediaItem-card__image--loaded ${!isLoaded ? 'mediaItem-card__image--blur' : ''}`}
+          style={{ backgroundImage: `url(${placeholderSrc})` }}
+          onLoad={() => setIsLoaded(true)}
         />
       )}
 
@@ -91,7 +101,6 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
         </div>
       )}
 
-      {/* Hover overlay with caption — hidden on touch devices via CSS */}
       {(isLoaded || mediaItem.mediaType === 'video') && (
         <div className="mediaItem-card__overlay">
           <p className="mediaItem-card__caption">{mediaItem.caption}</p>
@@ -105,9 +114,8 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
         </div>
       )}
 
-      {/* Add to album button */}
       {(isLoaded || mediaItem.mediaType === 'video') && onAddToAlbum && (
-        <button 
+        <button
           onClick={(e) => {
             e.stopPropagation()
             onAddToAlbum(mediaItem)
@@ -125,4 +133,3 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
     </div>
   )
 })
-

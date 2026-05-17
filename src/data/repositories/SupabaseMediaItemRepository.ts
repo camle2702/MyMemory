@@ -5,6 +5,10 @@ import type {
   MediaItemRepository,
 } from '@domain/repositories/MediaItemRepository'
 import type { MediaItem } from '@domain/entities/MediaItem'
+import {
+  buildImagePlaceholderUrl,
+  buildTimelineThumbnailUrl,
+} from '@/shared/mediaUrls'
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../remote/supabaseClient'
 
 export class SupabaseMediaItemRepository implements MediaItemRepository {
@@ -148,6 +152,8 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
     // Determine media type based on file type
     const isVideo = file.type.startsWith('video/');
     const mediaType = isVideo ? 'video' : 'image';
+    const thumbnailUrl = isVideo ? publicUrl : buildTimelineThumbnailUrl(publicUrl);
+    const placeholderUrl = isVideo ? '' : buildImagePlaceholderUrl(publicUrl);
 
     // 2. Save record to 'media_items' table
     const { data: recordData, error: dbError } = await supabase
@@ -157,8 +163,8 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
           album_id: albumId || null,
           media_type: mediaType,
           url: publicUrl,
-          thumbnail_url: publicUrl, // In a real app, generate a separate thumbnail for video
-          placeholder_url: '', // Could be generated on a backend Edge Function
+          thumbnail_url: thumbnailUrl,
+          placeholder_url: placeholderUrl,
           caption,
           date_taken: dateTaken.toISOString(),
         }
@@ -196,13 +202,16 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
   }
 
   private mapToEntity(record: any): MediaItem {
+    const isImage = record.media_type === 'image';
+    const thumbnailSource = record.thumbnail_url || record.url;
+
     return {
       id: record.id,
       albumId: record.album_id,
       mediaType: record.media_type,
       url: record.url,
-      thumbnailUrl: record.thumbnail_url,
-      placeholderUrl: record.placeholder_url,
+      thumbnailUrl: isImage ? buildTimelineThumbnailUrl(thumbnailSource) : thumbnailSource,
+      placeholderUrl: isImage ? (record.placeholder_url || buildImagePlaceholderUrl(thumbnailSource)) : '',
       caption: record.caption,
       dateTaken: new Date(record.date_taken),
       createdAt: new Date(record.created_at),

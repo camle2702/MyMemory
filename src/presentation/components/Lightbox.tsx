@@ -1,6 +1,5 @@
 import { type FC, useState, useRef, useEffect } from 'react'
 import type { MediaItem } from '@domain/entities/MediaItem'
-import { preloadImages } from '../hooks/useProgressiveImage'
 
 interface LightboxProps {
   isOpen: boolean
@@ -21,14 +20,14 @@ interface LightboxProps {
  * 1. Instantly shows the thumbnail (already cached from grid)
  * 2. Loads full-quality image in background
  * 3. Cross-fades from thumbnail to full when ready
- * 4. Preloads next/prev full images for instant slideshow navigation
+ * 4. Does not preload adjacent full images, keeping bandwidth focused on the item opened.
  */
 export const Lightbox: FC<LightboxProps> = ({
   isOpen,
   mediaItem,
   currentIndex,
   totalPhotos,
-  allPhotos,
+  allPhotos: _allPhotos,
   onClose,
   onNext,
   onPrev,
@@ -50,25 +49,16 @@ export const Lightbox: FC<LightboxProps> = ({
       fullImg.onload = () => setIsFullLoaded(true)
       fullImg.src = mediaItem.url
 
-      // Preload next/prev full-quality images for instant navigation
-      const toPreload: string[] = []
-      if (currentIndex + 1 < allPhotos.length && allPhotos[currentIndex + 1].mediaType === 'image') {
-        toPreload.push(allPhotos[currentIndex + 1].url)
-      }
-      if (currentIndex - 1 >= 0 && allPhotos[currentIndex - 1].mediaType === 'image') {
-        toPreload.push(allPhotos[currentIndex - 1].url)
-      }
-      preloadImages(toPreload)
-
       return () => {
         fullImg.onload = null
+        fullImg.src = ''
       }
     } else {
       // It's a video, no need for image preload logic here.
       // Video preload is handled by the <video> tag's `preload` attribute natively.
       setIsFullLoaded(true) 
     }
-  }, [mediaItem?.id, currentIndex, allPhotos])
+  }, [mediaItem?.id, currentIndex])
 
   if (!isOpen || !mediaItem) return null
 
