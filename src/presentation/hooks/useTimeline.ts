@@ -3,25 +3,34 @@ import type { TimelineGroup, MediaItem } from '@domain/entities/MediaItem'
 import type { TimelineGroupBy } from '@domain/usecases/GetTimelineMedia'
 import { container } from '@/di/container'
 
+const TIMELINE_PAGE_SIZE = 60
+
 interface UseTimelineState {
   groups: TimelineGroup[]
   allPhotos: MediaItem[]
   isLoading: boolean
+  isLoadingMore: boolean
   error: string | null
+  total: number
+  hasMore: boolean
+  nextOffset: number
 }
 
 /**
- * useTimeline — ViewModel/Presenter hook for the Timeline feature.
+ * useTimeline - ViewModel/Presenter hook for the Timeline feature.
  *
- * Bridges the domain use case to the React presentation layer.
- * Components consume this hook and remain free of business logic.
+ * Loads media in pages so the timeline does not fetch the entire library at once.
  */
 export function useTimeline() {
   const [state, setState] = useState<UseTimelineState>({
     groups: [],
     allPhotos: [],
     isLoading: true,
+    isLoadingMore: false,
     error: null,
+    total: 0,
+    hasMore: false,
+    nextOffset: 0,
   })
 
   // Grouping mode state with localStorage persistence
@@ -35,26 +44,76 @@ export function useTimeline() {
   }, [groupBy])
 
   const fetchTimeline = useCallback(async () => {
-    setState(prev => ({ ...prev, isLoading: true, error: null }))
+    setState(prev => ({
+      ...prev,
+      isLoading: true,
+      isLoadingMore: false,
+      error: null,
+      nextOffset: 0,
+    }))
 
     try {
-      const groups = await container.getTimelinePhotos.execute(groupBy)
-      const allPhotos = groups.flatMap(g => g.mediaItems)
+      const result = await container.getTimelinePhotos.executePage(groupBy, {
+        limit: TIMELINE_PAGE_SIZE,
+        offset: 0,
+      })
 
       setState({
-        groups,
-        allPhotos,
+        groups: result.groups,
+        allPhotos: result.mediaItems,
         isLoading: false,
+        isLoadingMore: false,
         error: null,
+        total: result.total,
+        hasMore: result.hasMore,
+        nextOffset: result.nextOffset,
       })
     } catch (err) {
       setState(prev => ({
         ...prev,
         isLoading: false,
+        isLoadingMore: false,
         error: err instanceof Error ? err.message : 'Đã xảy ra lỗi',
       }))
     }
   }, [groupBy])
+
+  const loadMore = useCallback(async () => {
+    if (state.isLoading || state.isLoadingMore || !state.hasMore) return
+
+    setState(prev => ({ ...prev, isLoadingMore: true, error: null }))
+
+    try {
+      const result = await container.getTimelinePhotos.executePage(groupBy, {
+        limit: TIMELINE_PAGE_SIZE,
+        offset: state.nextOffset,
+      })
+      const allPhotos = [...state.allPhotos, ...result.mediaItems]
+
+      setState(prev => ({
+        ...prev,
+        groups: container.getTimelinePhotos.groupMediaItems(allPhotos, groupBy),
+        allPhotos,
+        isLoadingMore: false,
+        total: result.total,
+        hasMore: result.hasMore,
+        nextOffset: result.nextOffset,
+      }))
+    } catch (err) {
+      setState(prev => ({
+        ...prev,
+        isLoadingMore: false,
+        error: err instanceof Error ? err.message : 'Đã xảy ra lỗi',
+      }))
+    }
+  }, [
+    groupBy,
+    state.allPhotos,
+    state.hasMore,
+    state.isLoading,
+    state.isLoadingMore,
+    state.nextOffset,
+  ])
 
   useEffect(() => {
     fetchTimeline()
@@ -65,5 +124,6 @@ export function useTimeline() {
     groupBy,
     setGroupBy,
     refresh: fetchTimeline,
+    loadMore,
   }
 }

@@ -17,7 +17,19 @@ import { useLightbox } from '../hooks/useLightbox'
  * Header and Footer are now rendered by App.tsx (shared layout).
  */
 export const TimelinePage: FC = () => {
-  const { groups, allPhotos, isLoading, error, refresh, groupBy, setGroupBy } = useTimeline()
+  const {
+    groups,
+    allPhotos,
+    isLoading,
+    isLoadingMore,
+    error,
+    refresh,
+    loadMore,
+    groupBy,
+    setGroupBy,
+    hasMore,
+    total,
+  } = useTimeline()
   const lightbox = useLightbox(allPhotos)
   const [assigningMedia, setAssigningMedia] = useState<MediaItem | null>(null)
 
@@ -95,6 +107,19 @@ export const TimelinePage: FC = () => {
                     return null
                 }
               })()}
+            </div>
+          )}
+
+          {!isLoading && !error && groups.length > 0 && hasMore && (
+            <div className="load-more">
+              <button
+                type="button"
+                className="load-more__button"
+                onClick={loadMore}
+                disabled={isLoadingMore}
+              >
+                {isLoadingMore ? 'Đang tải thêm...' : `Tải thêm (${allPhotos.length}/${total})`}
+              </button>
             </div>
           )}
         </div>

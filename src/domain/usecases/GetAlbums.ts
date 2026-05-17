@@ -16,10 +16,11 @@ export class GetAlbums {
   ) {}
 
   async execute(): Promise<AlbumWithStats[]> {
-    const [albums, mediaItems] = await Promise.all([
+    const [albums, albumStats] = await Promise.all([
       this.albumRepository.getAll(),
-      this.mediaItemRepository.getAll()
+      this.mediaItemRepository.getAlbumStats()
     ])
+    const statsByAlbumId = new Map(albumStats.map(stats => [stats.albumId, stats]))
 
     // Sort newest first
     const sortedAlbums = [...albums].sort(
@@ -27,10 +28,10 @@ export class GetAlbums {
     )
 
     return sortedAlbums.map(album => {
-      const albumMedia = mediaItems.filter(m => m.albumId === album.id)
-      const count = albumMedia.length
+      const stats = statsByAlbumId.get(album.id)
+      const count = stats?.mediaCount ?? 0
       // If album doesn't have an explicit cover, use the first media item's thumbnail
-      const cover = album.coverImageUrl || (count > 0 ? albumMedia[0].thumbnailUrl : null)
+      const cover = album.coverImageUrl || stats?.coverImageUrl || null
 
       return {
         ...album,

@@ -1,5 +1,10 @@
 import type { MediaItem } from '@domain/entities/MediaItem'
-import type { MediaItemRepository } from '@domain/repositories/MediaItemRepository'
+import type {
+  AlbumMediaStats,
+  MediaItemPage,
+  MediaItemPageOptions,
+  MediaItemRepository,
+} from '@domain/repositories/MediaItemRepository'
 import { MOCK_MEDIA_ITEMS } from '../mock/mockMediaItems'
 import { mapMediaItemFromDTO } from '../dto/MediaItemDTO'
 
@@ -22,7 +27,44 @@ export class MockMediaItemRepository implements MediaItemRepository {
   async getAll(): Promise<MediaItem[]> {
     // Simulate network delay
     await this.delay(300)
-    return this.mediaItems.map(mapMediaItemFromDTO)
+    return this.sortedItems().map(mapMediaItemFromDTO)
+  }
+
+  async getPage({ limit, offset, albumId }: MediaItemPageOptions): Promise<MediaItemPage> {
+    await this.delay(200)
+    const source = albumId
+      ? this.sortedItems().filter(p => p.album_id === albumId)
+      : this.sortedItems()
+    const items = source.slice(offset, offset + limit).map(mapMediaItemFromDTO)
+    const nextOffset = offset + items.length
+
+    return {
+      items,
+      total: source.length,
+      hasMore: nextOffset < source.length,
+      nextOffset,
+    }
+  }
+
+  async getAlbumStats(): Promise<AlbumMediaStats[]> {
+    await this.delay(150)
+    const stats = new Map<string, AlbumMediaStats>()
+
+    for (const item of this.sortedItems()) {
+      if (!item.album_id) continue
+      const existing = stats.get(item.album_id)
+      if (existing) {
+        existing.mediaCount += 1
+      } else {
+        stats.set(item.album_id, {
+          albumId: item.album_id,
+          mediaCount: 1,
+          coverImageUrl: item.thumbnail_url,
+        })
+      }
+    }
+
+    return Array.from(stats.values())
   }
 
   async getById(id: string): Promise<MediaItem | null> {
@@ -104,5 +146,11 @@ export class MockMediaItemRepository implements MediaItemRepository {
 
   private delay(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms))
+  }
+
+  private sortedItems() {
+    return [...this.mediaItems].sort(
+      (a, b) => new Date(b.date_taken).getTime() - new Date(a.date_taken).getTime()
+    )
   }
 }

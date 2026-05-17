@@ -575,6 +575,34 @@ button {
   pointer-events: auto;
 }
 
+.load-more {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-10) 0 var(--space-4);
+}
+
+.load-more__button {
+  min-width: 180px;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  background: var(--color-sand-900);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: var(--shadow-md);
+  transition: transform 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), opacity 0.2s var(--ease-out);
+}
+
+.load-more__button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
+}
+
+.load-more__button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 /* --- Grouping Switcher --- */
 .grouping-switcher {
   display: flex;

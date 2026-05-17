@@ -8,6 +8,17 @@ export interface AlbumWithPhotos {
   mediaItems: MediaItem[]
 }
 
+export interface AlbumMediaPageOptions {
+  limit: number
+  offset: number
+}
+
+export interface AlbumWithMediaPage extends AlbumWithPhotos {
+  total: number
+  hasMore: boolean
+  nextOffset: number
+}
+
 /**
  * GetAlbumWithMedia Use Case — Fetches a single album with all its mediaItems.
  */
@@ -26,5 +37,26 @@ export class GetAlbumWithMedia {
     mediaItems.sort((a, b) => b.dateTaken.getTime() - a.dateTaken.getTime())
 
     return { album, mediaItems }
+  }
+
+  async executePage(
+    albumId: string,
+    options: AlbumMediaPageOptions
+  ): Promise<AlbumWithMediaPage | null> {
+    const album = await this.albumRepository.getById(albumId)
+    if (!album) return null
+
+    const page = await this.mediaItemRepository.getPage({
+      ...options,
+      albumId,
+    })
+
+    return {
+      album,
+      mediaItems: page.items,
+      total: page.total,
+      hasMore: page.hasMore,
+      nextOffset: page.nextOffset,
+    }
   }
 }

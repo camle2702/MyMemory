@@ -1,4 +1,9 @@
-import type { MediaItemRepository } from '@domain/repositories/MediaItemRepository'
+import type {
+  AlbumMediaStats,
+  MediaItemPage,
+  MediaItemPageOptions,
+  MediaItemRepository,
+} from '@domain/repositories/MediaItemRepository'
 import type { MediaItem } from '@domain/entities/MediaItem'
 import { supabase, SUPABASE_URL, SUPABASE_ANON_KEY } from '../remote/supabaseClient'
 
@@ -14,6 +19,47 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
     if (error) throw new Error(error.message);
 
     return data.map(this.mapToEntity);
+  }
+
+  async getPage({ limit, offset, albumId }: MediaItemPageOptions): Promise<MediaItemPage> {
+    if (!supabase) throw new Error("Supabase client is not initialized.");
+
+    let query = supabase
+      .from('media_items')
+      .select('*', { count: 'exact' })
+      .order('date_taken', { ascending: false })
+      .range(offset, offset + limit - 1);
+
+    if (albumId) {
+      query = query.eq('album_id', albumId);
+    }
+
+    const { data, error, count } = await query;
+    if (error) throw new Error(error.message);
+
+    const items = (data ?? []).map(this.mapToEntity);
+    const total = count ?? offset + items.length;
+    const nextOffset = offset + items.length;
+
+    return {
+      items,
+      total,
+      hasMore: nextOffset < total,
+      nextOffset,
+    };
+  }
+
+  async getAlbumStats(): Promise<AlbumMediaStats[]> {
+    if (!supabase) throw new Error("Supabase client is not initialized.");
+
+    const { data, error } = await supabase.rpc('get_album_media_stats');
+    if (error) throw new Error(error.message);
+
+    return (data ?? []).map((row: any) => ({
+      albumId: row.album_id,
+      mediaCount: Number(row.media_count ?? 0),
+      coverImageUrl: row.cover_image_url ?? null,
+    }));
   }
 
   async getById(id: string): Promise<MediaItem | null> {

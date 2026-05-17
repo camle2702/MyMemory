@@ -9,6 +9,19 @@ const MONTH_NAMES_VI = [
 
 export type TimelineGroupBy = 'day' | 'month'
 
+export interface TimelinePageOptions {
+  limit: number
+  offset: number
+}
+
+export interface TimelinePageResult {
+  groups: TimelineGroup[]
+  mediaItems: MediaItem[]
+  total: number
+  hasMore: boolean
+  nextOffset: number
+}
+
 /**
  * GetTimelineMedia Use Case
  *
@@ -21,6 +34,25 @@ export class GetTimelineMedia {
   async execute(groupBy: TimelineGroupBy = 'month'): Promise<TimelineGroup[]> {
     const mediaItems = await this.mediaItemRepository.getAll()
     
+    return this.groupMediaItems(mediaItems, groupBy)
+  }
+
+  async executePage(
+    groupBy: TimelineGroupBy = 'month',
+    options: TimelinePageOptions
+  ): Promise<TimelinePageResult> {
+    const page = await this.mediaItemRepository.getPage(options)
+
+    return {
+      groups: this.groupMediaItems(page.items, groupBy),
+      mediaItems: page.items,
+      total: page.total,
+      hasMore: page.hasMore,
+      nextOffset: page.nextOffset,
+    }
+  }
+
+  groupMediaItems(mediaItems: MediaItem[], groupBy: TimelineGroupBy = 'month'): TimelineGroup[] {
     if (groupBy === 'day') {
       return this.groupByDay(mediaItems)
     }
