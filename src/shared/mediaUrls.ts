@@ -49,7 +49,7 @@ export function buildImagePlaceholderUrl(sourceUrl: string): string {
   return buildImageVariantUrl(sourceUrl, {
     width: 32,
     quality: 20,
-    resize: 'cover',
+    resize: 'contain',
   })
 }
 
@@ -57,6 +57,6 @@ export function buildTimelineThumbnailUrl(sourceUrl: string): string {
   return buildImageVariantUrl(sourceUrl, {
     width: 640,
     quality: 70,
-    resize: 'cover',
+    resize: 'contain',
   })
 }

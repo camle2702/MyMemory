@@ -36,7 +36,7 @@ export const TimelinePage: FC = () => {
   // View mode state with localStorage persistence
   const [viewMode, setViewMode] = useState<ViewMode>(() => {
     const saved = localStorage.getItem('myMemory_timelineViewMode')
-    return (saved as ViewMode) || 'grid'
+    return (saved as ViewMode) || 'masonry'
   })
 
   useEffect(() => {

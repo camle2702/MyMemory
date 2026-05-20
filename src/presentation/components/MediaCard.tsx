@@ -47,7 +47,10 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
     <div
       ref={ref}
       className="mediaItem-card group"
-      style={{ transitionDelay: `${staggerDelay}ms` }}
+      style={{
+        transitionDelay: `${staggerDelay}ms`,
+        ['--card-bg-image' as any]: `url(${thumbnailSrc})`,
+      }}
       onClick={() => onClick(mediaItem)}
       role="button"
       tabIndex={0}
@@ -62,12 +65,7 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
       {mediaItem.mediaType === 'video' ? (
         <video
           src={`${mediaItem.thumbnailUrl}#t=0.001`}
-          className="mediaItem-card__image mediaItem-card__image--loaded"
-          style={{
-            minHeight: '240px',
-            backgroundColor: 'var(--color-sand-100)',
-            objectFit: 'cover',
-          }}
+          className="mediaItem-card__image mediaItem-card__image--loaded mediaItem-card__video"
           preload="metadata"
           muted
           playsInline
@@ -88,7 +86,7 @@ export const MediaCard: FC<MediaCardProps> = memo(({ mediaItem, onClick, onAddTo
           loading="lazy"
           decoding="async"
           className={`mediaItem-card__image mediaItem-card__image--loaded ${!isLoaded ? 'mediaItem-card__image--blur' : ''}`}
-          style={{ backgroundImage: `url(${placeholderSrc})` }}
+          style={!isLoaded ? { backgroundImage: `url(${placeholderSrc})` } : undefined}
           onLoad={() => setIsLoaded(true)}
         />
       )}

@@ -152,8 +152,8 @@ export class SupabaseMediaItemRepository implements MediaItemRepository {
     // Determine media type based on file type
     const isVideo = file.type.startsWith('video/');
     const mediaType = isVideo ? 'video' : 'image';
-    const thumbnailUrl = isVideo ? publicUrl : buildTimelineThumbnailUrl(publicUrl);
-    const placeholderUrl = isVideo ? '' : buildImagePlaceholderUrl(publicUrl);
+    const thumbnailUrl = publicUrl;
+    const placeholderUrl = isVideo ? '' : publicUrl;
 
     // 2. Save record to 'media_items' table
     const { data: recordData, error: dbError } = await supabase
