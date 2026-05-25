@@ -48,64 +48,102 @@ CREATE INDEX idx_media_items_album_id ON media_items (album_id);
 ALTER TABLE albums ENABLE ROW LEVEL SECURITY;
 ALTER TABLE media_items ENABLE ROW LEVEL SECURITY;
 
--- Policy: Only authenticated users can read
-CREATE POLICY "Authenticated users can read albums"
+-- Policy: Allow public read
+CREATE POLICY "Public users can read albums"
   ON albums FOR SELECT
-  TO authenticated
+  TO public
   USING (true);
 
-CREATE POLICY "Authenticated users can read media_items"
+CREATE POLICY "Public users can read media_items"
   ON media_items FOR SELECT
-  TO authenticated
+  TO public
   USING (true);
 
--- Policy: Only authenticated users can insert
-CREATE POLICY "Authenticated users can insert albums"
+-- Policy: Allow public insert
+CREATE POLICY "Public users can insert albums"
   ON albums FOR INSERT
-  TO authenticated
+  TO public
   WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can insert media_items"
+CREATE POLICY "Public users can insert media_items"
   ON media_items FOR INSERT
-  TO authenticated
+  TO public
   WITH CHECK (true);
 
--- Policy: Only authenticated users can update their own
-CREATE POLICY "Authenticated users can update albums"
+-- Policy: Allow public update
+CREATE POLICY "Public users can update albums"
   ON albums FOR UPDATE
-  TO authenticated
+  TO public
   USING (true)
   WITH CHECK (true);
 
-CREATE POLICY "Authenticated users can update media_items"
+CREATE POLICY "Public users can update media_items"
   ON media_items FOR UPDATE
-  TO authenticated
+  TO public
   USING (true)
   WITH CHECK (true);
 
--- Policy: Only authenticated users can delete
-CREATE POLICY "Authenticated users can delete albums"
+-- Policy: Allow public delete
+CREATE POLICY "Public users can delete albums"
   ON albums FOR DELETE
-  TO authenticated
+  TO public
   USING (true);
 
-CREATE POLICY "Authenticated users can delete media_items"
+CREATE POLICY "Public users can delete media_items"
   ON media_items FOR DELETE
-  TO authenticated
+  TO public
   USING (true);
 
 -- ==============================
--- Storage Bucket (run in Supabase Dashboard)
+-- Database Functions
 -- ==============================
--- INSERT INTO storage.buckets (id, name, public)
--- VALUES ('media', 'media', true);
---
--- CREATE POLICY "Auth users can upload media"
---   ON storage.objects FOR INSERT
---   TO authenticated
---   WITH CHECK (bucket_id = 'media');
---
--- CREATE POLICY "Public can view media"
---   ON storage.objects FOR SELECT
---   TO public
---   USING (bucket_id = 'media');
+-- Hàm tính toán thống kê ảnh trong Album giúp giảm tải mạng ở trang danh sách
+CREATE OR REPLACE FUNCTION get_album_media_stats()
+RETURNS TABLE (
+  album_id UUID,
+  media_count BIGINT,
+  cover_image_url TEXT
+)
+LANGUAGE sql
+STABLE
+SECURITY INVOKER
+SET search_path = public
+AS $$
+  WITH ranked_media AS (
+    SELECT
+      media_items.album_id,
+      media_items.thumbnail_url,
+      row_number() OVER (
+        PARTITION BY media_items.album_id
+        ORDER BY media_items.date_taken DESC, media_items.created_at DESC
+      ) AS row_number
+    FROM media_items
+    WHERE media_items.album_id IS NOT NULL
+  )
+  SELECT
+    ranked_media.album_id,
+    count(*) AS media_count,
+    max(ranked_media.thumbnail_url) FILTER (WHERE ranked_media.row_number = 1) AS cover_image_url
+  FROM ranked_media
+  GROUP BY ranked_media.album_id;
+$$;
+
+-- ==============================
+-- Storage Bucket & Security Policies
+-- ==============================
+-- 1. Tạo bucket 'media' ở chế độ công khai nếu chưa tồn tại
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('media', 'media', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Thêm policy cho phép mọi người (anon/public) tải ảnh lên bucket 'media'
+CREATE POLICY "Allow public upload to media"
+  ON storage.objects FOR INSERT
+  TO public
+  WITH CHECK (bucket_id = 'media');
+
+-- 3. Thêm policy cho phép mọi người xem ảnh công khai từ bucket 'media'
+CREATE POLICY "Allow public select from media"
+  ON storage.objects FOR SELECT
+  TO public
+  USING (bucket_id = 'media');

@@ -11,7 +11,7 @@ export const Footer: FC = () => {
           <span>MyMemory</span>
         </div>
         <p className="footer__text">
-          Được tạo với tình yêu bởi bố Dương và mẹ Quỳnh — cho con gái yêu dấu 💕
+          Được tạo với tình yêu bởi bố Long và mẹ Lệ — cho bé Gạo yêu dấu 💕
         </p>
         <p className="footer__copyright">
           © {new Date().getFullYear()} MyMemory. Mọi ký ức đều quý giá.

@@ -4,7 +4,7 @@ export const MOCK_ALBUMS: AlbumDTO[] = [
   {
     id: 'a-001',
     title: 'Chào đời',
-    description: 'Những khoảnh khắc đầu tiên khi con gái chào đời. Ngày hạnh phúc nhất của bố Dương và mẹ Quỳnh.',
+    description: 'Những khoảnh khắc đầu tiên khi bé Gạo chào đời. Ngày hạnh phúc nhất của bố Long và mẹ Lệ.',
     cover_image_url: 'https://images.unsplash.com/mediaItem-1519689680058-324335c77eba?w=400&q=60',
     created_at: '2026-05-01T10:00:00Z',
   },

@@ -8,44 +8,66 @@
 
 /* --- Tokens / CSS Custom Properties --- */
 :root {
-  /* Colors — Warm, soft neutrals */
-  --color-cream: #faf8f5;
-  --color-warm-white: #fefdfb;
-  --color-sand-50: #f7f4f0;
-  --color-sand-100: #ede8e1;
-  --color-sand-200: #ddd6cb;
-  --color-sand-300: #c4b9a9;
-  --color-sand-400: #a89882;
-  --color-sand-500: #8f7d65;
-  --color-sand-600: #746350;
-  --color-sand-700: #5c4e3f;
-  --color-sand-800: #3d342b;
-  --color-sand-900: #271f18;
+  /* Colors — Premium Blue (Navy/Sapphire) & Red (Crimson) with Slate neutrals */
+  --color-blue-50: #f0f4ff;
+  --color-blue-100: #e0e8ff;
+  --color-blue-300: #94b4ff;
+  --color-blue-500: #3b66ff;
+  --color-blue-600: #254edb;
+  --color-blue-700: #1d3db8;
+  --color-blue-800: #0f2580;
+  --color-blue-900: #06113c;
 
-  /* Accent — Muted rose */
-  --color-rose-100: #fce8ec;
-  --color-rose-200: #f5c6cf;
-  --color-rose-300: #e8a0ad;
-  --color-rose-400: #d4778a;
-  --color-rose-500: #b85a6e;
+  --color-red-50: #fff1f2;
+  --color-red-100: #ffe4e6;
+  --color-red-200: #fecdd3;
+  --color-red-300: #fda4af;
+  --color-red-400: #fb7185;
+  --color-red-500: #f43f5e;
+  --color-red-600: #e11d48;
+  --color-red-700: #be123c;
+  --color-red-800: #9f1239;
+
+  /* Neutrals — Sleek Slate Slate/Gray instead of warm sand */
+  --color-cream: #f8fafc;
+  --color-warm-white: #ffffff;
+  --color-sand-50: #f1f5f9;
+  --color-sand-100: #e2e8f0;
+  --color-sand-200: #cbd5e1;
+  --color-sand-300: #94a3b8;
+  --color-sand-400: #64748b;
+  --color-sand-500: #475569;
+  --color-sand-600: #334155;
+  --color-sand-700: #1e293b;
+  --color-sand-800: var(--color-blue-800);
+  --color-sand-900: var(--color-blue-900);
+
+  /* Accents mapped to Crimson Red */
+  --color-rose-50: var(--color-red-50);
+  --color-rose-100: var(--color-red-100);
+  --color-rose-200: var(--color-red-200);
+  --color-rose-300: var(--color-red-300);
+  --color-rose-400: var(--color-red-500);
+  --color-rose-500: var(--color-red-600);
+  --color-rose-600: var(--color-red-700);
 
   /* Semantic */
   --color-bg: var(--color-cream);
   --color-surface: var(--color-warm-white);
   --color-surface-elevated: #ffffff;
   --color-border: var(--color-sand-100);
-  --color-border-subtle: rgba(0, 0, 0, 0.04);
+  --color-border-subtle: rgba(6, 17, 60, 0.05);
 
   --color-text-primary: var(--color-sand-900);
-  --color-text-secondary: var(--color-sand-600);
-  --color-text-muted: var(--color-sand-400);
+  --color-text-secondary: var(--color-sand-500);
+  --color-text-muted: var(--color-sand-300);
 
   --color-accent: var(--color-rose-400);
   --color-accent-light: var(--color-rose-100);
 
   /* Typography */
-  --font-display: 'Playfair Display', Georgia, 'Times New Roman', serif;
-  --font-body: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Spacing scale (4px base) */
   --space-1: 4px;
@@ -129,32 +151,46 @@ button {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(250, 248, 245, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border-subtle);
-  transition: box-shadow 0.3s var(--ease-out);
+  background: transparent;
+  transition: all 0.3s var(--ease-out);
   contain: layout style;
-}
-
-@media (max-width: 768px) {
-  .header {
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-}
-
-.header:hover {
-  box-shadow: var(--shadow-xs);
+  padding: var(--space-3) var(--space-4);
 }
 
 .header__inner {
-  max-width: 1280px;
+  max-width: 720px; /* Slim pill navbar on large screens */
   margin: 0 auto;
-  padding: var(--space-4) var(--space-6);
+  padding: var(--space-3) var(--space-6);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(15, 37, 128, 0.08);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s var(--ease-out);
+}
+
+.header:hover .header__inner {
+  box-shadow: var(--shadow-md);
+  border-color: rgba(15, 37, 128, 0.15);
+}
+
+@media (max-width: 640px) {
+  .header {
+    padding: 0; /* Bleed full-width on mobile */
+  }
+  .header__inner {
+    max-width: 100%;
+    border-radius: 0;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border-subtle);
+    padding: var(--space-3) var(--space-4);
+  }
 }
 
 .header__logo {
@@ -182,6 +218,12 @@ button {
 .header__nav {
   display: flex;
   gap: var(--space-8);
+}
+
+@media (max-width: 640px) {
+  .header__nav {
+    gap: var(--space-4);
+  }
 }
 
 .header__link {
@@ -422,32 +464,48 @@ button {
   break-inside: avoid;
   margin-bottom: var(--space-5);
   position: relative;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   cursor: pointer;
   background: var(--color-surface-elevated);
-  /* Scroll Animation initial state — use translate3d for GPU layer */
+  border: 1px solid rgba(6, 17, 60, 0.04);
+  /* Scroll Animation initial state */
   opacity: 0;
   transform: translate3d(0, 24px, 0);
-  /* GPU compositing hint — only during animation */
   will-change: opacity, transform;
   transition: opacity 0.5s var(--ease-out),
-              transform 0.5s var(--ease-out);
+              transform 0.5s var(--ease-out),
+              box-shadow 0.4s var(--ease-out);
 }
 
 .mediaItem-card.is-visible {
   opacity: 1;
   transform: translate3d(0, 0, 0);
-  /* Remove will-change after animation to free GPU memory */
   will-change: auto;
 }
 
 @media (hover: hover) {
+  .mediaItem-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-xl);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+    z-index: 5;
+  }
+  .mediaItem-card:hover::after {
+    opacity: 1;
+  }
   .mediaItem-card:hover {
-    box-shadow: var(--shadow-lg);
-    transform: translateY(-4px) !important;
-    transition: transform 0.3s var(--ease-out),
-                box-shadow 0.3s var(--ease-out);
+    box-shadow: 0 12px 28px -8px rgba(6, 17, 60, 0.1),
+                0 0 0 1px rgba(6, 17, 60, 0.04),
+                0 8px 16px -4px rgba(225, 29, 72, 0.06);
+    transform: translateY(-5px) !important;
+    transition: transform 0.4s var(--ease-spring),
+                box-shadow 0.4s var(--ease-spring);
   }
 }
 
@@ -1381,6 +1439,84 @@ button {
   transform: translateY(-1px) scale(0.98);
 }
 
+/* --- BeGao Mascot Styling --- */
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes mascot-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes speech-bubble-pop {
+  0% { transform: scale(0.85); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.mascot-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: var(--space-2) auto var(--space-4);
+  animation: mascot-float 3.5s ease-in-out infinite;
+  user-select: none;
+}
+
+.mascot-bubble {
+  background: var(--color-blue-50);
+  border: 1px solid var(--color-blue-100);
+  color: var(--color-blue-900);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin-bottom: var(--space-3);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  animation: speech-bubble-pop 0.3s var(--ease-spring);
+  text-align: center;
+  max-width: 280px;
+}
+
+.mascot-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0;
+  border-style: solid;
+  border-color: var(--color-blue-50) transparent;
+  display: block;
+  width: 0;
+}
+
+.mascot-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -7.5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 7.5px 7.5px 0;
+  border-style: solid;
+  border-color: var(--color-blue-100) transparent;
+  display: block;
+  width: 0;
+  z-index: -1;
+}
+
+.mascot-svg {
+  filter: drop-shadow(0 4px 8px rgba(15, 37, 128, 0.1));
+  transition: transform 0.3s var(--ease-out);
+}
+
+.mascot-container:hover .mascot-svg {
+  animation: mascot-wiggle 0.5s ease-in-out infinite;
+}
+
 /* ========================================================================
    Upload Modal
    ======================================================================== */
@@ -1764,7 +1900,7 @@ button {
   border-radius: var(--radius-xl);
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid var(--color-border-subtle);
+  border: 1px solid rgba(6, 17, 60, 0.04);
   /* Scroll Animation initial state */
   opacity: 0;
   transform: translateY(32px);
@@ -1773,7 +1909,7 @@ button {
   contain-intrinsic-size: 380px; /* Approximate height */
   transition: opacity 0.6s var(--ease-out),
               transform 0.6s var(--ease-out),
-              box-shadow 0.3s var(--ease-out),
+              box-shadow 0.4s var(--ease-spring),
               border-color 0.3s var(--ease-out);
 }
 
@@ -1782,10 +1918,28 @@ button {
   transform: translateY(0);
 }
 
-.album-card:hover {
-  transform: translateY(-6px) !important;
-  box-shadow: var(--shadow-xl);
-  border-color: var(--color-sand-200);
+@media (hover: hover) {
+  .album-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-xl);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s var(--ease-out);
+    z-index: 5;
+  }
+  .album-card:hover::after {
+    opacity: 1;
+  }
+  .album-card:hover {
+    transform: translateY(-6px) !important;
+    box-shadow: 0 16px 36px -8px rgba(6, 17, 60, 0.12),
+                0 0 0 1px rgba(6, 17, 60, 0.05),
+                0 12px 24px -6px rgba(225, 29, 72, 0.06);
+    border-color: rgba(6, 17, 60, 0.08);
+  }
 }
 
 .album-card:focus-visible {

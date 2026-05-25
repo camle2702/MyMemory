@@ -2,6 +2,130 @@ import { useState, useRef, useCallback, useEffect, type FC, type DragEvent } fro
 import type { Album } from '@domain/entities/Album'
 import { useUploadMedia } from '../hooks/useUploadMedia'
 
+
+const BeGaoMascot: FC<{ state: 'idle' | 'dragging' | 'ready' | 'uploading' | 'success' }> = ({ state }) => {
+  const getBubbleText = () => {
+    switch (state) {
+      case 'dragging':
+        return 'Ôi Gạo thích quá, thả ảnh vào đây đi ạ! ❤️'
+      case 'ready':
+        return 'Gạo chuẩn bị sẵn sàng rồi, nhấn Tải lên nhé! 🚀'
+      case 'uploading':
+        return 'Gạo đang nhận ảnh nè, chờ Gạo tí xíu nha... ⚡'
+      case 'success':
+        return 'Tải lên thành công rồi ạ! Gạo yêu bố mẹ nhất! 🎉✨'
+      case 'idle':
+      default:
+        return 'Bố Long Mẹ Lệ thả ảnh cho Gạo nhé! 🥰'
+    }
+  }
+
+  return (
+    <div className="mascot-container">
+      <div className="mascot-bubble">
+        {getBubbleText()}
+      </div>
+      <svg className="mascot-svg" width="100" height="100" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        {/* Adorable white rice grain body */}
+        <path
+          d="M50 15 C72 15, 80 40, 80 65 C80 88, 68 95, 50 95 C32 95, 20 88, 20 65 C20 40, 28 15, 50 15 Z"
+          fill="#ffffff"
+          stroke="var(--color-blue-300)"
+          strokeWidth="3.5"
+        />
+
+        {/* Cute pink bow for Bé Gạo (baby girl) */}
+        <path d="M68 25 C63 18, 58 27, 65 30 Z" fill="var(--color-accent)" />
+        <path d="M74 32 C78 25, 68 25, 69 31 Z" fill="var(--color-accent)" />
+        <circle cx="68" cy="28" r="4.5" fill="var(--color-red-600)" />
+
+        {/* Blush cheeks */}
+        <circle cx="33" cy="62" r="6" fill="#fecdd3" opacity="0.8" />
+        <circle cx="67" cy="62" r="6" fill="#fecdd3" opacity="0.8" />
+
+        {/* Render elements based on dynamic states */}
+        {state === 'idle' && (
+          <>
+            {/* Eyes */}
+            <rect x="38" y="50" width="5" height="10" rx="2.5" fill="#0f172a" />
+            <rect x="57" y="50" width="5" height="10" rx="2.5" fill="#0f172a" />
+            <circle cx="40" cy="53" r="1.5" fill="#ffffff" />
+            <circle cx="59" cy="53" r="1.5" fill="#ffffff" />
+            {/* Mouth */}
+            <path d="M46 64 Q50 67 54 64" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            {/* Waving/resting arms */}
+            <path d="M18 64 Q10 58 12 52" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M82 64 Q88 68 85 74" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </>
+        )}
+
+        {state === 'dragging' && (
+          <>
+            {/* Heart Eyes */}
+            <path d="M36 48 C33 44, 41 42, 41 49 C41 42, 49 44, 46 48 L41 53 Z" fill="var(--color-accent)" />
+            <path d="M54 48 C51 44, 59 42, 59 49 C59 42, 67 44, 64 48 L59 53 Z" fill="var(--color-accent)" />
+            {/* Mouth */}
+            <path d="M45 61 Q50 71 55 61 Z" fill="#e11d48" />
+            {/* Excited raised arms */}
+            <path d="M18 62 Q10 52 14 44" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M82 62 Q90 52 86 44" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </>
+        )}
+
+        {state === 'ready' && (
+          <>
+            {/* Wink and happy eye */}
+            <path d="M36 52 L42 55 L36 58" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+            <path d="M54 56 Q58 50 62 56" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            {/* Smile */}
+            <path d="M46 64 Q50 69 54 64" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            {/* Happy cheering arms */}
+            <path d="M18 60 Q12 50 16 46" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M82 60 Q88 50 84 46" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+          </>
+        )}
+
+        {state === 'uploading' && (
+          <>
+            {/* Helmet */}
+            <path d="M34 25 C34 10, 66 10, 66 25 Z" fill="#eab308" stroke="#ca8a04" strokeWidth="1.5" />
+            <path d="M30 25 C30 25, 50 28, 70 25" stroke="#ca8a04" strokeWidth="3" strokeLinecap="round" />
+            <rect x="47" y="14" width="6" height="11" fill="#ffffff" rx="1" />
+            {/* Closed curved eyes */}
+            <path d="M37 54 Q41 58 45 54" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d="M55 54 Q59 58 63 54" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            {/* Cute 'o' focus mouth */}
+            <circle cx="50" cy="64" r="3.5" fill="#0f172a" />
+            {/* Working arms and flag */}
+            <path d="M18 64 Q12 68 15 74" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M82 64 Q88 60 92 50" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <line x1="92" y1="50" x2="92" y2="36" stroke="#475569" strokeWidth="2" />
+            <path d="M92 36 L102 41 L92 46 Z" fill="var(--color-blue-500)" />
+          </>
+        )}
+
+        {state === 'success' && (
+          <>
+            {/* Big heart in center */}
+            <path d="M50 78 C46 72, 38 72, 38 78 C38 84, 46 88, 50 92 C54 88, 62 84, 62 78 C62 72, 54 72, 50 78 Z" fill="var(--color-accent)" />
+            {/* Smiling happy eyes */}
+            <path d="M37 52 Q41 46 45 52" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            <path d="M55 52 Q59 46 63 52" stroke="#0f172a" strokeWidth="2.5" strokeLinecap="round" fill="none" />
+            {/* Wide happy smile */}
+            <path d="M46 60 Q50 67 54 60 Z" fill="#e11d48" />
+            {/* Hugging arms */}
+            <path d="M18 64 Q28 72 38 76" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            <path d="M82 64 Q72 72 62 76" stroke="#94a3b8" strokeWidth="3" strokeLinecap="round" fill="none" />
+            {/* Sparkles */}
+            <path d="M15 30 L17 33 L20 33 L18 35 L19 38 L15 36 L11 38 L12 35 L10 33 L13 33 Z" fill="#eab308" />
+            <path d="M85 32 L87 35 L90 35 L88 37 L89 40 L85 38 L81 40 L82 37 L80 35 L83 35 Z" fill="var(--color-red-400)" />
+          </>
+        )}
+      </svg>
+    </div>
+  )
+}
+
 interface UploadModalProps {
   isOpen: boolean
   albums: Album[]
@@ -132,6 +256,17 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
 
   const isFormValid = files.length > 0
 
+  let mascotState: 'idle' | 'dragging' | 'ready' | 'uploading' | 'success' = 'idle'
+  if (success) {
+    mascotState = 'success'
+  } else if (isUploading) {
+    mascotState = 'uploading'
+  } else if (isDragging) {
+    mascotState = 'dragging'
+  } else if (previews.length > 0) {
+    mascotState = 'ready'
+  }
+
   if (!isOpen) return null
 
   return (
@@ -162,6 +297,7 @@ export const UploadModal: FC<UploadModalProps> = ({ isOpen, albums, initialAlbum
 
         {/* Body */}
         <div className="upload-modal__body">
+          <BeGaoMascot state={mascotState} />
           <input
             ref={fileInputRef}
             type="file"

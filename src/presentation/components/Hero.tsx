@@ -28,8 +28,8 @@ export const Hero: FC = () => {
           <span className="hero__heading-accent">đều đáng nhớ</span>
         </h1>
         <p className="hero__description">
-          Nơi bố Dương và mẹ Quỳnh lưu giữ từng nụ cười, bước đi đầu tiên,
-          và tất cả những kỷ niệm quý giá trên hành trình lớn lên của con.
+          Nơi bố Long và mẹ Lệ lưu giữ từng nụ cười, bước đi đầu tiên,
+          và tất cả những kỷ niệm quý giá trên hành trình lớn lên của bé Gạo.
         </p>
         <a href="#timeline" className="hero__cta">
           Xem hành trình
